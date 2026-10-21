@@ -1,3 +1,82 @@
+_jinja_extensions:
+    - copier_templates_extensions.TemplateExtensionLoader
+    - extensions/context.py:ContextUpdater
+
+_exclude:
+  - "copier.yml"
+  - "*.py[co]"
+  - "__pycache__"
+  - ".git"
+  - "extensions"
+  - "includes"
+
 directory_name:
     type: str
     help: What should we name the directory?
+
+synthesis_object:
+  type: str
+  help: Which type of synthesis object?
+  choices:
+    - Metamer
+    - MetamerCTF
+    - MADCompetition
+    - Eigendistortion
+
+init_params:
+  when: false
+  type: yaml
+  multiline: true
+  default: |
+    {%- if synthesis_object in ['Metamer', 'MetamerCTF'] -%}
+    - image
+    - model
+    - loss_function
+    - penalty_function
+    - penalty_lambda
+    {%- elif synthesis_object == 'MADCompetition' -%}
+    - image
+    - optimized_metric
+    - reference_metric
+    - minmax
+    - metric_tradeoff_lambda
+    - penalty_function
+    - penalty_lambda
+    {%- elif synthesis_object == 'Eigendistortion' -%}
+    - image
+    - model
+    {%- endif -%}
+
+setup_params:
+  when: false
+  type: yaml
+  multiline: true
+  default: |
+    {%- if synthesis_object in ['Metamer', 'MetamerCTF'] -%}
+    - initial_image
+    - optimizer
+    - optimizer_kwargs
+    - scheduler
+    - scheduler_kwargs
+    {%- elif synthesis_object == 'MADCompetition' -%}
+    - initial_noise
+    - optimizer
+    - optimizer_kwargs
+    - scheduler
+    - scheduler_kwargs
+    {%- elif synthesis_object == 'Eigendistortion' -%}
+    []
+    {%- endif -%}
+
+images:
+  type: path
+  help: Which images to use? To use your own module, type the path to a script.
+
+hyperparams:
+  type: str
+  help: Which hyperparameters to search over?
+  multiselect: true
+  choices: |
+    {%- for param in init_params + setup_params %}
+    - "{{ param }}"
+    {%- endfor %}
