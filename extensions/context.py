@@ -6,18 +6,26 @@ import pathlib
 
 class ContextUpdater(ContextHook):
     def hook(self, context):
-        if "image_search" in context:
-            if context["image_search"].endswith(".py"):
-                file_contents = pathlib.Path(context["image_search"]).read_text()
-                tree = ast.parse(file_contents)
-                funcs = [f.name for f in tree.body if isinstance(f, ast.FunctionDef)]
-                context["image_search_choices"] = funcs
-                context["image_search_calls"] = [f"{f}()" for f in funcs]
-                context["image_search_functions"] = file_contents
-            else:
-                images = context["image_search"].split(",")
-                context["image_search_choices"] = [i.split(".")[-1].split('(')[0] for i in images]
-                context["image_search_calls"] = images
+        hyperparams = context.get("render_hyperparams", {})
+        # HOW TO HANDLE NOT SEARCHING OVER IMAGE, MODEL? do same thing but instead raise
+        # an error if there's more than one choice?
+        for k in context.get("hyperparams", []):
+            key = f"{k}_search"
+            if key in context and key not in hyperparams:
+                hyperparams[k] = {}
+                val = context.pop(key, "")
+                if val.endswith(".py"):
+                    file_contents = pathlib.Path(val).read_text()
+                    tree = ast.parse(file_contents)
+                    funcs = [f.name for f in tree.body if isinstance(f, ast.FunctionDef)]
+                    hyperparams[k]["choices"] = funcs
+                    hyperparams[k]["calls"] = [f"{f}()" for f in funcs]
+                    hyperparams[k]["functions"] = file_contents
+                else:
+                    values = val.split(",")
+                    hyperparams[k]["choices"] = [i.split(".")[-1].split('(')[0] for i in values]
+                    hyperparams[k]["calls"] = values
+        context["render_hyperparams"] = hyperparams
         if "penalty_lambda" in context:
             penalty_lambda = context.pop("penalty_lambda")
             if not isinstance(penalty_lambda, list):

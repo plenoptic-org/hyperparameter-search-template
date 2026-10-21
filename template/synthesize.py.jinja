@@ -5,30 +5,36 @@ import torch
 
 app = App()
 
-{{ image_search_functions }}
+{%- for hyp_dict in render_hyperparams.values() %}
+{{ hyp_dict["functions"] }}
+{%- endfor %}
 
 @app.default
 def main(
-    {% if image_search %}image: Literal[{% for f in image_search_choices %}"{{ f }}", {% endfor %}],{% endif %}
+{%- for key, hyp_dict in render_hyperparams.items() %}
+    {{ key }}: Literal[{% for f in hyp_dict["choices"] %}"{{ f }}", {% endfor %}],
+{%- endfor %}
     device: int | str = "cpu",
 ):
     """Synthesize some {{ synthesis_object }}.
 
     Parameters
     ----------
-    {% if image_search -%}
-    image
+{%- for key in render_hyperparams %}
+    {{ key }}
          Target image for {{ synthesis_object }} synthesis.
-    {%- endif %}
+{%- endfor %}
     device
          Torch device to use.
     """
     {% if image %}
     image = {{ image }}
     {% else %}
-    {% for f in image_search_choices -%}
-    {% if loop.first %}if{% else %}elif{% endif %} image == "{{ f }}":
-        image = {{ image_search_calls[loop.index0] }}
+    {% for key, hyp_dict in render_hyperparams.items() %}
+    {% for f in hyp_dict["choices"] -%}
+    {% if loop.first %}if{% else %}elif{% endif %} {{ key }} == "{{ f }}":
+        {{ key }} = {{ hyp_dict["calls"][loop.index0] }}
+    {% endfor -%}
     {% endfor -%}
     {% endif %}
     model = po.models.LuminanceGainControl(
