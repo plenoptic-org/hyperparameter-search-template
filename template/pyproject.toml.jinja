@@ -1,0 +1,22 @@
+[project]
+name = "{{ directory_name }}"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cyclopts",
+    "plenoptic",
+    "altair",
+    "pandas",
+    "torch",
+]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

@@ -1,0 +1,44 @@
+from cyclopts import App
+from typing import Literal
+import plenoptic as po
+import torch
+
+app = App()
+
+{{ image_search_functions }}
+
+@app.default
+def main(
+    {% if image_search %}image: Literal[{% for f in image_search_choices %}"{{ f }}", {% endfor %}],{% endif %}
+    device: int | str = "cpu",
+):
+    """Synthesize some {{ synthesis_object }}.
+
+    Parameters
+    ----------
+    {% if image_search -%}
+    image
+         Target image for {{ synthesis_object }} synthesis.
+    {%- endif %}
+    device
+         Torch device to use.
+    """
+    {% if image %}
+    image = {{ image }}
+    {% else %}
+    {% for f in image_search_choices -%}
+    {% if loop.first %}if{% else %}elif{% endif %} image == "{{ f }}":
+        image = {{ image_search_calls[loop.index0] }}
+    {% endfor -%}
+    {% endif %}
+    model = po.models.LuminanceGainControl(
+        31, pretrained=True, pad_mode="circular", cache_filt=True
+    ).eval()
+    po.remove_grad(model)
+    met = po.Metamer(image, model)
+    print(met)
+    met.synthesize(5)
+
+
+if __name__ == "__main__":
+    app()

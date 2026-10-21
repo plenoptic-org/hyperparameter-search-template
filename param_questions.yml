@@ -1,0 +1,31 @@
+image:
+  type: path
+  help: Enter the one-line call to initialize the image, can use calls from the plenoptic (`po.data.einstein()`) or torch (`torch.rand((256, 256))`) namespaces
+  when: "{{ 'image' not in hyperparams }}"
+
+image_search:
+  type: path
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('image', 'path') }}"
+  when: "{{ 'image' in hyperparams }}"
+
+model:
+  type: path
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('models', 'path') }}"
+  when: "{{ 'model' in hyperparams }}"
+  placeholder: po.models.PortillaSimoncelli(image.shape[-2:])
+
+loss_function:
+  type: path
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('loss_function', 'path') }}"
+  when: "{{ 'loss_function' in hyperparams }}"
+
+penalty_function:
+  type: path
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_function', 'path') }}"
+  when: "{{ 'penalty_function' in hyperparams }}"
+
+penalty_lambda:
+  type: json
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'penalty_lambda' in hyperparams }}"
+  default: []
