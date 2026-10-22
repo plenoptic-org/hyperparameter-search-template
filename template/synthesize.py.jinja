@@ -3,11 +3,18 @@ import time
 from cyclopts import App, Parameter, Token
 from typing import Literal, Annotated, Sequence
 import plenoptic as po
+import matplotlib.pyplot as plt
 import torch
 from pathlib import Path
 
 app = App()
 
+plt.rcParams.update({
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+    "savefig.bbox": "tight",
+    "figure.dpi": 72,
+})
 
 def eval_torch(type_, tokens: Sequence[Token]):
     # converts torch/None strings to appropriate objects
@@ -28,6 +35,9 @@ def eval_dict(type_, tokens: Sequence[Token]):
 {%- for hyp_dict in render_complex_params.values() %}
 {{ hyp_dict["functions"] }}
 {%- endfor %}
+{%- if status_plot %}
+{{ status_plot["functions"] }}
+{%- endif %}
 
 @app.default
 def main(
@@ -76,6 +86,15 @@ def main(
     {% if animate %}
     ani_path = out_path.with_name(f"{out_path.stem}.mp4")
     po.plot.synthesis_animate(synth).save(ani_path)
+    {% endif %}
+    {% if status_plot %}
+    {%- for func in status_plot["calls"] -%}
+    plot_path = out_path.with_name(f"{out_path.stem}-{{func}}.svg")
+    {{ func }}(synth).savefig(plot_path)
+    {%- endfor -%}
+    {% else %}
+    plot_path = out_path.with_name(f"{out_path.stem}.svg")
+    po.plot.synthesis_status(synth).savefig(plot_path)
     {% endif %}
 
 

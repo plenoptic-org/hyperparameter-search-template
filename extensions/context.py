@@ -41,6 +41,17 @@ class ContextUpdater(ContextHook):
                     if not any([val.startswith("{"), val.startswith("torch."), val.startswith("po.")]):
                         val = f'"{val}"'
                 simple_params[param] = (annot, val)
+        if "status_plot" in context and context["status_plot"]:
+            if context["status_plot"].endswith(".py"):
+                file_contents = pathlib.Path(context["status_plot"]).read_text()
+                tree = ast.parse(file_contents)
+                # don't bring in private functions
+                funcs = [f.name for f in tree.body if isinstance(f, ast.FunctionDef)
+                         if not f.name.startswith("_")]
+                context["status_plot"] = {"functions": file_contents,
+                                          "calls": [f"{f}" for f in funcs]}
+            else:
+                raise ValueError(f"status_plot must be empty or path to a script! but got {context['status_plot']}")
         return {
             "render_complex_params": complex_params,
             "render_simple_params": simple_params,
