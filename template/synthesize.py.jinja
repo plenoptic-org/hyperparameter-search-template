@@ -1,49 +1,72 @@
-from cyclopts import App
-from typing import Literal
+import ast
+import time
+from cyclopts import App, Parameter, Token
+from typing import Literal, Annotated, Sequence
 import plenoptic as po
 import torch
+from pathlib import Path
 
 app = App()
 
-{%- for hyp_dict in render_hyperparams.values() %}
+
+def eval_torch(type_, tokens: Sequence[Token]):
+    # converts torch/None strings to appropriate objects
+    value = tokens[0].value
+    if isinstance(value, str):
+        if value.startswith("torch."):
+            return eval(value)
+        elif value == "None":
+            return None
+    else:
+        return value
+
+
+def eval_dict(type_, tokens: Sequence[Token]):
+    # converts strings to dictionary of built-ins
+    return ast.literal_eval(tokens[0].value)
+
+{%- for hyp_dict in render_complex_params.values() %}
 {{ hyp_dict["functions"] }}
 {%- endfor %}
 
 @app.default
 def main(
-{%- for key, hyp_dict in render_hyperparams.items() %}
-    {{ key }}: Literal[{% for f in hyp_dict["choices"] %}"{{ f }}", {% endfor %}],
+{%- for key, hyp_dict in render_complex_params.items() %}
+    {{ key }}: Literal[{% for f in hyp_dict["choices"] %}"{{ f }}", {% endfor %}] = "{{ hyp_dict["choices"][0] }}",
 {%- endfor %}
+{%- for key, (annot, value) in render_simple_params.items() %}
+    {{ key }}{{annot}} = {{ value }},
+{%- endfor %}
+    out_path: Path = Path("synth.pt"),
     device: int | str = "cpu",
 ):
-    """Synthesize some {{ synthesis_object }}.
-
-    Parameters
-    ----------
-{%- for key in render_hyperparams %}
-    {{ key }}
-         Target image for {{ synthesis_object }} synthesis.
-{%- endfor %}
-    device
-         Torch device to use.
-    """
-    {% if image %}
-    image = {{ image }}
-    {% else %}
-    {% for key, hyp_dict in render_hyperparams.items() %}
+    """Synthesize some {{ synthesis_object }} images."""
+    {% for key, hyp_dict in render_complex_params.items() %}
     {% for f in hyp_dict["choices"] -%}
     {% if loop.first %}if{% else %}elif{% endif %} {{ key }} == "{{ f }}":
         {{ key }} = {{ hyp_dict["calls"][loop.index0] }}
     {% endfor -%}
     {% endfor -%}
-    {% endif %}
-    model = po.models.LuminanceGainControl(
-        31, pretrained=True, pad_mode="circular", cache_filt=True
-    ).eval()
     po.remove_grad(model)
-    met = po.Metamer(image, model)
-    print(met)
-    met.synthesize(5)
+    synth = po.{{ synthesis_object }}(
+    {%- for key in init_params %}
+        {{ key }}={{ key }},
+    {%- endfor %}
+    )
+    synth.setup(
+    {%- for key in setup_params %}
+        {{ key }}={{ key }},
+    {%- endfor %}
+    )
+    print(synth)
+    start = time.time()
+    synth.synthesize(
+    {%- for key in synth_params %}
+        {{ key }}={{ key }},
+    {%- endfor %}
+    )
+    stop = time.time()
+    synth.save(out_path)
 
 
 if __name__ == "__main__":

@@ -70,12 +70,10 @@ synth_params:
   default: |
     {%- if synthesis_object in ['Metamer', 'MADCompetition'] -%}
     - max_iter
-    - store_progress
     - stop_criterion
     - stop_iters_to_check
     {%- elif synthesis_object == 'MetamerCTF' -%}
     - max_iter
-    - store_progress
     - stop_criterion
     - stop_iters_to_check
     - change_scale_criterion
@@ -88,12 +86,18 @@ synth_params:
     - stop_criterion
     {%- endif -%}
 
-hyperparams:
+all_params:
+  when: false
+  type: yaml
+  default: "{{ init_params + setup_params + synth_params }}"
+
+search_params:
   type: str
   help: Which hyperparameters to search over? These are in order, those passed to initialization, those passed to setup, those passed to synthesize.
   multiselect: true
   choices: |
-    {%- for param in init_params + setup_params + synth_params %}
+    - seed
+    {%- for param in all_params %}
     - "{{ param }}"
     {%- endfor %}
 
@@ -102,9 +106,3 @@ hyperparams:
 !include param_questions.yml
 ---
 
-# write first pass at synthesize.py, write_dispatch.py, create_html.py
-#   - for create_html.py, allow user to specify what image to plot
-#   - have a separate synthesize.py that allows for two-stage synthesis
-# - finish param_questions.yml
-# - add something about separate (give us path) or default plot (synthesis_status)
-#   - will always save plot of synthesized image itself

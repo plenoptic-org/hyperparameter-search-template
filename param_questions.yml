@@ -1,31 +1,77 @@
 image:
   type: path
-  help: Enter the one-line call to initialize the image, can use calls from the plenoptic (`po.data.einstein()`) or torch (`torch.rand((256, 256))`) namespaces
-  when: "{{ 'image' not in hyperparams }}"
-
-image_search:
-  type: path
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('image', 'path') }}"
-  when: "{{ 'image' in hyperparams }}"
+  when: "{{ 'image' in all_params }}"
 
 model:
   type: path
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('models', 'path') }}"
-  when: "{{ 'model' in hyperparams }}"
-  placeholder: po.models.PortillaSimoncelli(image.shape[-2:])
+  when: "{{ 'model' in all_params }}"
 
 loss_function:
   type: path
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('loss_function', 'path') }}"
-  when: "{{ 'loss_function' in hyperparams }}"
+  when: "{{ 'loss_function' in search_params }}"
+  default: "po.metric.mse"
 
 penalty_function:
   type: path
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_function', 'path') }}"
-  when: "{{ 'penalty_function' in hyperparams }}"
+  when: "{{ 'penalty_function' in search_params }}"
+  default: "po.regularize.penalize_range"
 
 penalty_lambda:
   type: json
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
-  when: "{{ 'penalty_lambda' in hyperparams }}"
-  default: []
+  when: "{{ 'penalty_lambda' in search_params }}"
+  default: 0.1
+
+initial_image:
+  type: str
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
+  when: "{{ 'initial_image' in search_params }}"
+  default: "torch.rand_like(image)"
+
+optimizer:
+  type: str
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
+  when: "{{ 'optimizer' in search_params }}"
+  default: "torch.optim.Adam"
+  validator: "{% if not (optimizer | regex_search('^torch.optim')) %}Use optimizer from torch{% endif %}"
+
+optimizer_kwargs:
+  type: str
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
+  when: "{{ 'optimizer_kwargs' in search_params }}"
+  default: "{'amsgrad': True, 'lr': 0.1}"
+
+scheduler:
+  type: str
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
+  when: "{{ 'scheduler' in search_params }}"
+  default: "None"
+  validator: "{% if not (scheduler | regex_search('^torch.optim|None')) %}Use scheduler from torch or None{% endif %}"
+
+scheduler_kwargs:
+  type: str
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
+  when: "{{ 'scheduler_kwargs' in search_params }}"
+  default: "{}"
+
+max_iter:
+  type: int
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'max_iter' in search_params }}"
+  default: 100
+
+stop_criterion:
+  type: float
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'stop_criterion' in search_params }}"
+  default: 0
+
+stop_iters_to_check:
+  type: int
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'stop_iters_to_check' in search_params }}"
+  default: 50
