@@ -5,7 +5,7 @@ import pathlib
 
 
 complex_choices = ["image", "model", "loss_function", "penalty_function",
-                   "initial_image"]
+                   "initial_image", "optimized_metric", "reference_metric"]
 custom_converters = {"optimizer": "eval_torch", "scheduler": "eval_torch",
                      "optimizer_kwargs": "eval_dict", "scheduler_kwargs": "eval_dict"}
 
@@ -35,8 +35,11 @@ class ContextUpdater(ContextHook):
                 if annot:
                     annot = f": Annotated[str, Parameter(converter={annot})]"
                 val = context[param]
-                if isinstance(val, str):
-                    val = f'"{val}"'
+                if isinstance(val, str) and val != "None":
+                    # These are the special strings: dictionaries and objects from the
+                    # torch or plenoptic namespaces
+                    if not any([val.startswith("{"), val.startswith("torch."), val.startswith("po.")]):
+                        val = f'"{val}"'
                 simple_params[param] = (annot, val)
         return {
             "render_complex_params": complex_params,

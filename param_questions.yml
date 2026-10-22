@@ -100,3 +100,51 @@ q:
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
   when: "{{ 'q' in search_params }}"
   default: 2
+
+initial_noise:
+  type: float
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'initial_noise' in search_params }}"
+  default: 0.1
+
+change_scale_criterion:
+  type: float
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'change_scale_criterion' in search_params }}"
+  default: 0.01
+
+ctf_iters_to_check:
+  type: int
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'ctf_iters_to_check' in search_params }}"
+  default: 50
+
+coarse_to_fine:
+  type: str
+  help: "How to do coarse-to-fine: together, separate"
+  when: "{{ 'coarse_to_fine' in search_params }}"
+  default: together
+  validator: "{% if coarse_to_fine not in ['together', 'separate'] %}Pick a valid value!{% endif %}"
+
+optimized_metric:
+  type: path
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('optimized_metric', 'path') }}"
+  when: "{{ 'optimized_metric' in all_params }}"
+
+reference_metric:
+  type: path
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('reference_metric', 'path') }}"
+  when: "{{ 'reference_metric' in all_params }}"
+
+minmax:
+  type: str
+  help: "What to do to optimized_metric: min, max"
+  when: "{{ 'minmax' in search_params }}"
+  default: min
+  validator: "{% if minmax not in ['min', 'max'] %}Pick a valid value!{% endif %}"
+
+metric_tradeoff_lambda:
+  type: str
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('metric_tradeoff_lambda', 'floats') }}"
+  when: "{{ 'metric_tradeoff_lambda' in search_params }}"
+  default: None

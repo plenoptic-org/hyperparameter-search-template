@@ -19,12 +19,19 @@ init_params:
   type: yaml
   multiline: true
   default: |
-    {%- if synthesis_object in ['Metamer', 'MetamerCTF'] -%}
+    {%- if synthesis_object == 'Metamer' -%}
     - image
     - model
     - loss_function
     - penalty_function
     - penalty_lambda
+    {%- elif synthesis_object == 'MetamerCTF' -%}
+    - image
+    - model
+    - loss_function
+    - penalty_function
+    - penalty_lambda
+    - coarse_to_fine
     {%- elif synthesis_object == 'MADCompetition' -%}
     - image
     - optimized_metric

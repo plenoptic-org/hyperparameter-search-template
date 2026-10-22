@@ -48,7 +48,9 @@ def main(
         {{ key }} = {{ hyp_dict["calls"][loop.index0] }}
     {% endfor -%}
     {% endfor -%}
+    {% if model %}
     po.remove_grad(model)
+    {% endif %}
     synth = po.{{ synthesis_object }}(
     {%- for key in init_params %}
         {{ key }}={{ key }},
