@@ -34,7 +34,10 @@ class ContextUpdater(ContextHook):
                 annot = custom_converters.get(param, "")
                 if annot:
                     annot = f": Annotated[str, Parameter(converter={annot})]"
-                simple_params[param] = (annot, context[param])
+                val = context[param]
+                if isinstance(val, str):
+                    val = f'"{val}"'
+                simple_params[param] = (annot, val)
         return {
             "render_complex_params": complex_params,
             "render_simple_params": simple_params,

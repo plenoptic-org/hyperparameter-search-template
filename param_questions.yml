@@ -75,3 +75,28 @@ stop_iters_to_check:
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
   when: "{{ 'stop_iters_to_check' in search_params }}"
   default: 50
+
+method:
+  type: str
+  help: "Eigendistortion method: power, exact, randomized_svd"
+  default: power
+  when: "{{ 'method' in search_params }}"
+  validator: "{% if method not in ['power', 'enact', 'randomized_svd'] %}Pick a valid method!{% endif %}"
+
+k:
+  type: int
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'k' in search_params }}"
+  default: 1
+
+p:
+  type: int
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'p' in search_params }}"
+  default: 5
+
+q:
+  type: int
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  when: "{{ 'q' in search_params }}"
+  default: 2

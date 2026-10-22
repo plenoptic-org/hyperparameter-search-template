@@ -54,11 +54,13 @@ def main(
         {{ key }}={{ key }},
     {%- endfor %}
     )
+    {% if setup_params %}
     synth.setup(
     {%- for key in setup_params %}
         {{ key }}={{ key }},
     {%- endfor %}
     )
+    {% endif %}
     print(synth)
     start = time.time()
     synth.synthesize(

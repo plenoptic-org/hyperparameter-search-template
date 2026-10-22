@@ -76,6 +76,7 @@ synth_params:
     - ctf_iters_to_check
     {%- elif synthesis_object == 'Eigendistortion' -%}
     - method
+    - max_iter
     - k
     - p
     - q
