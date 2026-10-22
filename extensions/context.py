@@ -26,7 +26,7 @@ class ContextUpdater(ContextHook):
                     param_dict["calls"] = [f"{f}()" for f in funcs]
                     param_dict["functions"] = file_contents
                 else:
-                    values = context[param].split(",")
+                    values = context[param].split(";")
                     param_dict["choices"] = [i.split('(')[0].split(".")[-1] for i in values]
                     param_dict["calls"] = values
                 complex_params[param] = param_dict
