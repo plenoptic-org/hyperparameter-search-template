@@ -102,3 +102,8 @@ search_params:
 !include param_questions.yml
 ---
 
+animate:
+  type: bool
+  help: Would you like to save a video animating synthesis progress?
+  default: False
+  when: "{{ synthesis_object != 'Eigendistortion' }}"

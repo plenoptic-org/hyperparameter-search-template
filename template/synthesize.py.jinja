@@ -38,6 +38,7 @@ def main(
     {{ key }}{{annot}} = {{ value }},
 {%- endfor %}
     out_path: Path = Path("synth.pt"),
+    {% if animate %}n_frames: int = 50,{% endif %}
     device: int | str = "cpu",
 ):
     """Synthesize some {{ synthesis_object }} images."""
@@ -64,9 +65,15 @@ def main(
     {%- for key in synth_params %}
         {{ key }}={{ key }},
     {%- endfor %}
+        {% if animate %}store_progress=max_iter//n_frames,{% endif %}
     )
     stop = time.time()
     synth.save(out_path)
+    {% if animate %}
+    ani_path = out_path.with_name(f"{out_path.stem}.mp4")
+    po.plot.synthesis_animate(synth).save(ani_path)
+    {% endif %}
+
 
 
 if __name__ == "__main__":
