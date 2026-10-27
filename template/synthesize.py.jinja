@@ -5,6 +5,7 @@ from typing import Literal, Annotated, Sequence
 import plenoptic as po
 import matplotlib.pyplot as plt
 import torch
+import pandas as pd
 from pathlib import Path
 
 app = App()
@@ -47,11 +48,16 @@ def main(
 {%- for key, (annot, value) in render_simple_params.items() %}
     {{ key }}{{annot}} = {{ value }},
 {%- endfor %}
-    out_path: Path = Path("synth.pt"),
     {% if animate %}n_frames: int = 50,{% endif %}
+    out_path: Path = Path("synth.pt"),
     device: int | str = "cpu",
 ):
     """Synthesize some {{ synthesis_object }} images."""
+    data = {
+        {%- for key in render_complex_params %}
+        "{{ key }}": {{ key }},
+        {%- endfor %}
+    }
     {% for key, hyp_dict in render_complex_params.items() %}
     {% for f in hyp_dict["choices"] -%}
     {% if loop.first %}if{% else %}elif{% endif %} {{ key }} == "{{ f }}":
@@ -84,19 +90,30 @@ def main(
     stop = time.time()
     synth.save(out_path)
     {% if animate %}
-    ani_path = out_path.with_name(f"{out_path.stem}.mp4")
+    ani_path = out_path.with_suffix(".mp4")
     po.plot.synthesis_animate(synth).save(ani_path)
     {% endif %}
+    img_path = out_path.with_suffix(".png")
+    po.plot.synthesis_imshow(synth).figure.savefig(img_path)
     {% if status_plot %}
     {%- for func in status_plot["calls"] -%}
     plot_path = out_path.with_name(f"{out_path.stem}-{{func}}.svg")
     {{ func }}(synth).savefig(plot_path)
     {%- endfor -%}
     {% else %}
-    plot_path = out_path.with_name(f"{out_path.stem}.svg")
+    plot_path = out_path.with_suffix(".svg")
     po.plot.synthesis_status(synth).savefig(plot_path)
     {% endif %}
-
+    data.update({
+        "synthesis_duration": stop - start,
+        "out_path": out_path,
+        "image_path": img_path,
+        {%- if animate %}"animate_path": ani_path,{%- endif %}
+        {% if optimized_synthesis %}"synthesis_loss": synth.losses[-1].item(),
+        "synthesis_penalty": synth.penalties[-1].item(),{%- endif %}
+    })
+    csv_path = out_path.with_suffix(".csv")
+    pd.DataFrame(data, index=[0]).to_csv(csv_path, index=False)
 
 
 if __name__ == "__main__":

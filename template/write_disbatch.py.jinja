@@ -1,4 +1,50 @@
 #!/usr/bin/env python3
 
 import itertools
+from collections import OrderedDict
 from pathlib import Path
+from cyclopts import App, Parameter, Token
+
+
+app = App()
+
+@app.default
+def main(
+    base_out: Path = Path("{{ base_out }}"),
+    for_disbatch: bool = True,
+    out_file: Path = Path("disbatch.txt"),
+):
+    commands = []
+    if not for_disbatch:
+        commands.append("set -euxo pipefail")
+    cluster_prefix = "{{ cluster_prefix }}"
+    params = OrderedDict()
+    {%- for key, hyp_dict in render_complex_params.items() %}
+    params["{{ key }}"] = [{% for f in hyp_dict["choices"] %}"{{ f }}" {% endfor %}]
+    {%- endfor %}
+    {%- for key, (annot, value) in render_simple_params.items() %}
+    params["{{ key }}"] = ["{{ value }}"]
+    {%- endfor %}
+    keys = params.keys()
+
+    {% raw %}
+    def dict_str_to_path(v):
+        for char in ["{", "}", " ", "'",'"']:
+            v = v.replace(char, "")
+        v = v.replace(":", "-")
+        return v.replace(",", "_")
+
+    path_template = "_".join([f'{k}-{{}}' for k in keys]) + ".pt"
+    args_template = " ".join([f'--{k} "{{}}"' for k in keys])
+    for vals in itertools.product(*params.values()):
+        path_vals = [dict_str_to_path(v) for v in vals]
+        outfile = base_out / path_template.format(*path_vals)
+        cmd = "python synthesize.py " + args_template.format(*vals)
+        commands.append(f"({cluster_prefix} {cmd} --out-path {outfile}) &> {outfile.with_suffix('.log')} ")
+
+    out_file.write_text('\n'.join(commands))
+    {% endraw %}
+
+if __name__ == "__main__":
+    app()
+

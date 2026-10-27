@@ -14,6 +14,16 @@ synthesis_object:
     - MADCompetition
     - Eigendistortion
 
+optimized_synthesis:
+  when: false
+  type: bool
+  default: |
+    {%- if synthesis_object == 'Eigendistortion' -%}
+    false
+    {% else %}
+    true
+    {%- endif -%}
+
 init_params:
   when: false
   type: yaml
@@ -93,14 +103,13 @@ synth_params:
 all_params:
   when: false
   type: yaml
-  default: "{{ init_params + setup_params + synth_params }}"
+  default: "{{ init_params + setup_params + synth_params + ['seed'] }}"
 
 search_params:
   type: str
   help: Which hyperparameters to search over? These are in order, those passed to initialization, those passed to setup, those passed to synthesize.
   multiselect: true
   choices: |
-    - seed
     {%- for param in all_params %}
     - "{{ param }}"
     {%- endfor %}
@@ -119,3 +128,13 @@ animate:
 status_plot:
   type: path
   help: Would you like to save a custom status plot? Leave blank to use plenoptic's built-in po.plot.synthesis_status
+
+base_out:
+  type: str
+  help: Directory to save output into.
+  default: /mnt/ceph/users/wbroderick/plenoptic_experiments/
+
+cluster_prefix:
+  type: str
+  help: String to prepend to all commands for setting environmental variables. Intended to ensure that local caches are used consistently even when submitting jobs to a SLURM cluster.
+  default: PYTORCH_KERNEL_CACHE_PATH=~/.cache/torch/kernels TORCH_HOME=~/.cache/torch MPLCONFIGDIR=~/.cache/matplotlib PLENOPTIC_CACHE_DIR=~/.cache/plenoptic

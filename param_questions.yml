@@ -1,3 +1,9 @@
+seed:
+  type: int
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('image', 'float') }}"
+  when: "{{ 'seed' in search_params }}"
+  default: 0
+
 image:
   type: path
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('image', 'path') }}"
