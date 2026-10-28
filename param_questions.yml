@@ -49,7 +49,7 @@ optimizer_kwargs:
   type: str
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
   when: "{{ 'optimizer_kwargs' in search_params }}"
-  default: "{'amsgrad': True, 'lr': 0.1}"
+  default: "{'amsgrad': True, 'lr': 0.01}"
 
 scheduler:
   type: str
