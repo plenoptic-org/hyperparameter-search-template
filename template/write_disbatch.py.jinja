@@ -39,11 +39,11 @@ def main(
 
     {% raw %}
     path_keys = [k for k, v in params.items() if len(v) > 1]
+    if len(path_keys) == 0:
+        raise ValueError("Not searching over anything!")
     path_template = "_".join([f'{k}-{{}}' for k in path_keys]) + ".pt"
     args_template = " ".join([f'--{k} "{{}}"' for k in keys])
     print(f"{path_template=}")
-    if path_template == ".pt":
-        raise ValueError("Not searching over anything!")
     {% endraw %}
     for vals in itertools.product(*params.values()):
         path_vals = [dict_str_to_path(v) for i, v in enumerate(vals) if keys[i] in path_keys]
