@@ -5,15 +5,26 @@ import pathlib
 
 
 complex_choices = ["image", "model", "loss_function", "penalty_function",
-                   "initial_image", "optimized_metric", "reference_metric"]
+                   "initial_image", "optimized_metric", "reference_metric",
+                   "optimizer", "scheduler"]
+dict_choices = ["optimizer_kwargs", "scheduler_kwargs"]
 custom_converters = {"optimizer": "eval_torch", "scheduler": "eval_torch",
                      "optimizer_kwargs": "eval_dict", "scheduler_kwargs": "eval_dict"}
+types = {"seed": "int", "penalty_lambda": "float", "max_iter": "int", "stop_criterion": "float",
+         "stop_iters_to_check": "int", "method": "str", "k": "int", "p": "int", "q": "int",
+         "initial_noise": "float", "change_scale_criterion": "float", "ctf_iters_to_check": "int",
+         "coarse_to_fine": "str", "minmax": "str", "metric_tradeoff_lambda": "float"}
+
 
 class ContextUpdater(ContextHook):
     def hook(self, context):
         complex_params = {}
         simple_params = {}
-        for param in context.get("all_params", []):
+        dict_params = {}
+        all_params = context.get("all_params", [])
+        non_search_params = set(all_params) - set(context.get("search_params", []))
+        non_search_params = sorted(non_search_params, key=lambda x: all_params.index(x))
+        for param in all_params:
             if param in complex_choices and param in context:
                 param_dict = {}
                 if context[param].endswith(".py"):
@@ -33,14 +44,29 @@ class ContextUpdater(ContextHook):
             elif param in context:
                 annot = custom_converters.get(param, "")
                 if annot:
-                    annot = f": Annotated[str, Parameter(converter={annot})]"
+                    annot = f"Annotated[str, Parameter(converter={annot})]"
+                else:
+                    annot = types[param]
                 val = context[param]
                 if isinstance(val, str) and val != "None":
+                    # then this is actually a list
+                    if val.startswith("["):
+                        try:
+                            val = ast.literal_eval(val)
+                        except ValueError:
+                            # then this contains torch or plenoptic objects and so we
+                            # just want to turn it into a list of strings
+                            val = [v for v in val[1:-1].split(",")]
                     # These are the special strings: dictionaries and objects from the
                     # torch or plenoptic namespaces
-                    if not any([val.startswith("{"), val.startswith("torch."), val.startswith("po.")]):
-                        val = f'"{val}"'
-                simple_params[param] = (annot, val)
+                    elif not any([val.startswith("{"), val.startswith("torch."), val.startswith("po.")]):
+                            val = f'"{val}"'
+                if not isinstance(val, list):
+                    val = [val]
+                if param in dict_choices:
+                    dict_params[param] = (annot, val)
+                else:
+                    simple_params[param] = (annot, val)
         if "status_plot" in context and context["status_plot"]:
             if context["status_plot"].endswith(".py"):
                 file_contents = pathlib.Path(context["status_plot"]).read_text()
@@ -55,4 +81,6 @@ class ContextUpdater(ContextHook):
         return {
             "render_complex_params": complex_params,
             "render_simple_params": simple_params,
+            "render_dict_params": dict_params,
+            "non_search_params": non_search_params,
         }

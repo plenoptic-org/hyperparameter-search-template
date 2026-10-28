@@ -42,22 +42,40 @@ def eval_dict(type_, tokens: Sequence[Token]):
 
 @app.default
 def main(
-{%- for key, hyp_dict in render_complex_params.items() %}
-    {{ key }}: Literal[{% for f in hyp_dict["choices"] %}"{{ f }}", {% endfor %}] = "{{ hyp_dict["choices"][0] }}",
-{%- endfor %}
-{%- for key, (annot, value) in render_simple_params.items() %}
-    {{ key }}{{annot}} = {{ value }},
-{%- endfor %}
+{%- for key in search_params -%}
+{% if key in render_complex_params %}
+    {{ key }}: Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}],
+{%- else %}
+    {{ key }}: {{ render_simple_params[key][0] }},
+{%- endif %}
+{%- endfor -%}
+{%- for key in non_search_params -%}
+{% if key in render_complex_params %}
+    {{ key }}: Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}] = "{{ render_complex_params[key]["choices"][0] }}",
+{%- elif key in render_simple_params %}
+    {{ key }}: {{ render_simple_params[key][0] }} = {{ render_simple_params[key][1][0] }},
+{%- else %}
+    {{ key }}: {{ render_dict_params[key][0] }} = {{ render_dict_params[key][1][0] }},
+{%- endif %}
+{%- endfor -%}
     {% if animate %}n_frames: int = 50,{% endif %}
     out_path: Path = Path("synth.pt"),
     device: int | str = "cpu",
+    dtype: Annotated[str, Parameter(converter=eval_torch)] = torch.float32,
 ):
     """Synthesize some {{ synthesis_object }} images."""
     data = {
         {%- for key in render_complex_params %}
         "{{ key }}": {{ key }},
         {%- endfor %}
+        {%- for key in render_simple_params %}
+        "{{ key }}": {{ key }},
+        {%- endfor %}
     }
+    {%- for key in render_dict_params %}
+    if {{ key }}:
+        data.update({f"{{key}}_{k}": v for k, v in {{ key }}.items()})
+    {%- endfor %}
     {% for key, hyp_dict in render_complex_params.items() %}
     {% for f in hyp_dict["choices"] -%}
     {% if loop.first %}if{% else %}elif{% endif %} {{ key }} == "{{ f }}":
@@ -80,6 +98,9 @@ def main(
     )
     {% endif %}
     print(synth)
+    device = torch.device(device)
+    synth.to(device)
+    synth.to(dtype)
     start = time.time()
     synth.synthesize(
     {%- for key in synth_params %}
@@ -111,6 +132,8 @@ def main(
         {%- if animate %}"animate_path": ani_path,{%- endif %}
         {% if optimized_synthesis %}"synthesis_loss": synth.losses[-1].item(),
         "synthesis_penalty": synth.penalties[-1].item(),{%- endif %}
+        "device": str(device),
+        "dtype": str(dtype),
     })
     csv_path = out_path.with_suffix(".csv")
     pd.DataFrame(data, index=[0]).to_csv(csv_path, index=False)

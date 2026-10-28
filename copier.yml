@@ -138,3 +138,8 @@ cluster_prefix:
   type: str
   help: String to prepend to all commands for setting environmental variables. Intended to ensure that local caches are used consistently even when submitting jobs to a SLURM cluster.
   default: PYTORCH_KERNEL_CACHE_PATH=~/.cache/torch/kernels TORCH_HOME=~/.cache/torch MPLCONFIGDIR=~/.cache/matplotlib PLENOPTIC_CACHE_DIR=~/.cache/plenoptic
+
+python_command:
+  type: str
+  default: uv run
+  help: python command to use for running synthesize.py. If you use uv, this should be uv run. Else, should probably be python

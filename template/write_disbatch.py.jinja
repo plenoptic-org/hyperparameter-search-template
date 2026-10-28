@@ -3,10 +3,17 @@
 import itertools
 from collections import OrderedDict
 from pathlib import Path
-from cyclopts import App, Parameter, Token
+from cyclopts import App
+import warnings
 
 
 app = App()
+
+def dict_str_to_path(v):
+    for char in ["{", "}", " ", "'",'"']:
+        v = v.replace(char, "")
+    v = v.replace(":", "-")
+    return v.replace(",", "_")
 
 @app.default
 def main(
@@ -20,31 +27,34 @@ def main(
     cluster_prefix = "{{ cluster_prefix }}"
     params = OrderedDict()
     {%- for key, hyp_dict in render_complex_params.items() %}
-    params["{{ key }}"] = [{% for f in hyp_dict["choices"] %}"{{ f }}" {% endfor %}]
+    params["{{ key }}"] = [{% for f in hyp_dict["choices"] %}"{{ f }}", {% endfor %}]
     {%- endfor %}
     {%- for key, (annot, value) in render_simple_params.items() %}
-    params["{{ key }}"] = ["{{ value }}"]
+    params["{{ key }}"] = [{% for v in value %}"{{ v }}", {% endfor %}]
     {%- endfor %}
-    keys = params.keys()
+    {%- for key, (annot, value) in render_dict_params.items() %}
+    params["{{ key }}"] = [{% for v in value %}"{{ v }}", {% endfor %}]
+    {%- endfor %}
+    keys = list(params.keys())
 
     {% raw %}
-    def dict_str_to_path(v):
-        for char in ["{", "}", " ", "'",'"']:
-            v = v.replace(char, "")
-        v = v.replace(":", "-")
-        return v.replace(",", "_")
-
-    path_template = "_".join([f'{k}-{{}}' for k in keys]) + ".pt"
+    path_keys = [k for k, v in params.items() if len(v) > 1]
+    path_template = "_".join([f'{k}-{{}}' for k in path_keys]) + ".pt"
     args_template = " ".join([f'--{k} "{{}}"' for k in keys])
+    print(f"{path_template=}")
+    if path_template == ".pt":
+        raise ValueError("Not searching over anything!")
+    {% endraw %}
     for vals in itertools.product(*params.values()):
-        path_vals = [dict_str_to_path(v) for v in vals]
+        path_vals = [dict_str_to_path(v) for i, v in enumerate(vals) if keys[i] in path_keys]
         outfile = base_out / path_template.format(*path_vals)
-        cmd = "python synthesize.py " + args_template.format(*vals)
+        if outfile.exists():
+            warnings.warn(f"{outfile=} exists, skipping...")
+            continue
+        cmd = "{{ python_command }} synthesize.py " + args_template.format(*vals)
         commands.append(f"({cluster_prefix} {cmd} --out-path {outfile}) &> {outfile.with_suffix('.log')} ")
 
     out_file.write_text('\n'.join(commands))
-    {% endraw %}
 
 if __name__ == "__main__":
     app()
-
