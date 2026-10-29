@@ -8,8 +8,7 @@ complex_choices = ["image", "model", "loss_function", "penalty_function",
                    "initial_image", "optimized_metric", "reference_metric",
                    "optimizer", "scheduler"]
 dict_choices = ["optimizer_kwargs", "scheduler_kwargs"]
-custom_converters = {"optimizer": "eval_torch", "scheduler": "eval_torch",
-                     "optimizer_kwargs": "eval_dict", "scheduler_kwargs": "eval_dict"}
+custom_converters = {"optimizer_kwargs": "eval_dict", "scheduler_kwargs": "eval_dict"}
 types = {"seed": "int", "penalty_lambda": "float", "max_iter": "int", "stop_criterion": "float",
          "stop_iters_to_check": "int", "method": "str", "k": "int", "p": "int", "q": "int",
          "initial_noise": "float", "change_scale_criterion": "float", "ctf_iters_to_check": "int",
@@ -67,7 +66,7 @@ class ContextUpdater(ContextHook):
                                 v = [v]
                             new_val[k] = [str(v_) for v_ in v]
                         val = new_val
-                        default = None
+                        default = {}
                     else:
                         if not isinstance(val, list):
                             val = [val]
