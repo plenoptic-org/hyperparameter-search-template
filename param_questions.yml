@@ -47,8 +47,13 @@ optimizer:
 
 optimizer_kwargs:
   type: str
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
-  when: "{{ 'optimizer_kwargs' in search_params }}"
+  help: |
+    {%- if optimizer.split(';') | length > 1 -%}
+    Enter a dictionary of dictionaries specifying the keyword arguments to pass to each optimizer. The keys should be the name of the optimizer (e.g., "Adam" for torch.optim.Adam)
+    {%- else -%}
+    Enter a dictionary specifying the keyword arguments to pass to the optimizer {{ optimizer }}
+    {%- endif -%}
+  when: "{{ 'optimizer_kwargs' in search_params or 'optimizer' in search_params }}"
   default: "{'amsgrad': True, 'lr': 0.01}"
 
 scheduler:
@@ -61,7 +66,7 @@ scheduler:
 scheduler_kwargs:
   type: str
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
-  when: "{{ 'scheduler_kwargs' in search_params }}"
+  when: "{{ 'scheduler_kwargs' in search_params or 'scheduler' in search_params }}"
   default: "{}"
 
 max_iter:

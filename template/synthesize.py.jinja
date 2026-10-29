@@ -45,8 +45,10 @@ def main(
 {%- for key in search_params -%}
 {% if key in render_complex_params %}
     {{ key }}: Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}],
-{%- else %}
+{%- elif key in render_simple_params %}
     {{ key }}: {{ render_simple_params[key][0] }},
+{%- else %}
+    {{ key }}: {{ render_dict_params[key][0] }},
 {%- endif %}
 {%- endfor -%}
 {%- for key in non_search_params -%}
@@ -55,7 +57,7 @@ def main(
 {%- elif key in render_simple_params %}
     {{ key }}: {{ render_simple_params[key][0] }} = {{ render_simple_params[key][1][0] }},
 {%- else %}
-    {{ key }}: {{ render_dict_params[key][0] }} = {{ render_dict_params[key][1][0] }},
+    {{ key }}: {{ render_dict_params[key][0] }} = {{ render_dict_params[key][2] }},
 {%- endif %}
 {%- endfor -%}
     {% if animate %}n_frames: int = 50,{% endif %}

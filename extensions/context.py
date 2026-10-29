@@ -48,7 +48,7 @@ class ContextUpdater(ContextHook):
                 else:
                     annot = types[param]
                 val = context[param]
-                if isinstance(val, str) and val != "None":
+                if isinstance(val, str) and param not in dict_choices:
                     # then this is actually a list
                     if val.startswith("["):
                         try:
@@ -57,15 +57,26 @@ class ContextUpdater(ContextHook):
                             # then this contains torch or plenoptic objects and so we
                             # just want to turn it into a list of strings
                             val = [v for v in val[1:-1].split(",")]
-                    # These are the special strings: dictionaries and objects from the
-                    # torch or plenoptic namespaces
-                    elif not any([val.startswith("{"), val.startswith("torch."), val.startswith("po.")]):
-                            val = f'"{val}"'
-                if not isinstance(val, list):
-                    val = [val]
                 if param in dict_choices:
-                    dict_params[param] = (annot, val)
+                    non_kwargs_param = complex_params.get(param.split("_")[0], {})
+                    if non_kwargs_param and len(non_kwargs_param["choices"]) > 1:
+                        val = ast.literal_eval(val)
+                        new_val = {}
+                        for k, v in val.items():
+                            if not isinstance(v, list):
+                                v = [v]
+                            new_val[k] = [str(v_) for v_ in v]
+                        val = new_val
+                        default = None
+                    else:
+                        if not isinstance(val, list):
+                            val = [val]
+                        default = val[0]
+                        val = {non_kwargs_param["choices"][0]: val}
+                    dict_params[param] = (annot, val, default)
                 else:
+                    if not isinstance(val, list):
+                        val = [val]
                     simple_params[param] = (annot, val)
         if "status_plot" in context and context["status_plot"]:
             if context["status_plot"].endswith(".py"):
