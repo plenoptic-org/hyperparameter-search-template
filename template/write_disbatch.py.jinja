@@ -31,9 +31,15 @@ def main(
     out_file: Path = Path("disbatch.txt"),
 ):
     commands = []
+
+    # These can be modified if you wish to change them.
     if not for_disbatch:
         commands.append("set -euxo pipefail")
     cluster_prefix = "{{ cluster_prefix }}"
+
+    # Edit the following lines in order to modify what values you will search over. As
+    # long as you're using the same type of synthesis object (e.g., Metamer), you
+    # shouldn't need to re-generate synthesize.py
     params = OrderedDict()
     {%- for key, hyp_dict in render_complex_params.items() %}
     params["{{ key }}"] = [{% for f in hyp_dict["choices"] %}"{{ f }}", {% endfor %}]
@@ -43,6 +49,10 @@ def main(
     {%- endfor %}
     {%- for key, (_, value, _) in render_dict_params.items() %}
     {{ key }} = {{ value }}
+    {%- endfor %}
+
+    # The lines from here to the end of the file should probably not be modified
+    {%- for key, (_, value, _) in render_dict_params.items() %}
     tmp = []
     for k in params["{{ key.split('_')[0] }}"]:
         if k in {{ key }}:

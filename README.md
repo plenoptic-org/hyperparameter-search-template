@@ -8,7 +8,7 @@ For now, this assumes that you are synthesizing images (which matters because of
 - from scripts, choices will be non-private functions
 - Explain about status plot, can be any number, must only require synth object and return figure to save
 - add note about UV_PROJECT_ENVIRONMENT and resharing environments
-- write how image, initial_image can also accept paths (but this won't show up in help string)
+- write how image, initial_image can also accept paths (but this won't show up in help string), nor will we add any to write_disbatch.py, you'll have to add on your own
 
 ## TODO
 - write create_html.py, allow user to specify what image to plot
