@@ -27,6 +27,12 @@ def eval_torch(type_, tokens: Sequence[Token]):
         return value
 
 
+def load_image(path: Path):
+    if path.suffix == ".png":
+        return po.load_images(path)
+    elif path.suffix == ".pt":
+        loaded = torch.load(path, weights_only=True)
+        return loaded["_{{ synthesis_object | lower }}"]
 
 
 {% for hyp_dict in render_complex_params.values() -%}
@@ -40,7 +46,7 @@ def eval_torch(type_, tokens: Sequence[Token]):
 def main(
 {%- for key in search_params -%}
 {% if key in render_complex_params %}
-    {{ key }}: Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}],
+    {{ key }}: {% if key in render_load_params %}Path | {% endif %}Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}],
 {%- elif key in render_simple_params %}
     {{ key }}: {{ render_simple_params[key][0] }},
 {%- else %}
@@ -49,7 +55,7 @@ def main(
 {%- endfor -%}
 {%- for key in non_search_params -%}
 {% if key in render_complex_params %}
-    {{ key }}: Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}] = "{{ render_complex_params[key]["choices"][0] }}",
+    {{ key }}: {% if key in render_load_params %}Path | {% endif %}Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}] = "{{ render_complex_params[key]["choices"][0] }}",
 {%- elif key in render_simple_params %}
     {{ key }}: {{ render_simple_params[key][0] }} = {{ render_simple_params[key][1][0] }},
 {%- else %}
@@ -78,6 +84,10 @@ def main(
     {% for f in hyp_dict["choices"] -%}
     {% if loop.first %}if{% else %}elif{% endif %} {{ key }} == "{{ f }}":
         {{ key }} = {{ hyp_dict["calls"][loop.index0] }}
+    {% if key in render_load_params -%}
+    else:
+        {{ key }} = load_image({{ key }})
+    {% endif -%}
     {% endfor -%}
     {% endfor -%}
     {% if model %}

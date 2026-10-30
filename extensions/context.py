@@ -7,6 +7,8 @@ import pathlib
 complex_choices = ["image", "model", "loss_function", "penalty_function",
                    "initial_image", "optimized_metric", "reference_metric",
                    "optimizer", "scheduler"]
+# these variable are also allowed to load in paths
+load_in_paths = ["image", "initial_image"]
 dict_choices = ["optimizer_kwargs", "scheduler_kwargs"]
 types = {"seed": "int", "penalty_lambda": "float", "max_iter": "int", "stop_criterion": "float",
          "stop_iters_to_check": "int", "method": "str", "k": "int", "p": "int", "q": "int",
@@ -87,6 +89,7 @@ class ContextUpdater(ContextHook):
                 raise ValueError(f"status_plot must be empty or path to a script! but got {context['status_plot']}")
         return {
             "render_complex_params": complex_params,
+            "render_load_params": load_in_paths,
             "render_simple_params": simple_params,
             "render_dict_params": dict_params,
             "non_search_params": non_search_params,
