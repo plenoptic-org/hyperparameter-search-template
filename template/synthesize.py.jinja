@@ -23,22 +23,18 @@ def eval_torch(type_, tokens: Sequence[Token]):
     if isinstance(value, str):
         if value.startswith("torch."):
             return eval(value)
-        elif value == "None":
-            return None
     else:
         return value
 
 
-def eval_dict(type_, tokens: Sequence[Token]):
-    # converts strings to dictionary of built-ins
-    return ast.literal_eval(tokens[0].value)
 
-{%- for hyp_dict in render_complex_params.values() %}
+
+{% for hyp_dict in render_complex_params.values() -%}
 {{ hyp_dict["functions"] }}
-{%- endfor %}
-{%- if status_plot %}
+{%- endfor -%}
+{%- if status_plot -%}
 {{ status_plot["functions"] }}
-{%- endif %}
+{%- endif -%}
 
 @app.default
 def main(

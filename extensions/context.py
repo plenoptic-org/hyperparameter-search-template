@@ -8,11 +8,12 @@ complex_choices = ["image", "model", "loss_function", "penalty_function",
                    "initial_image", "optimized_metric", "reference_metric",
                    "optimizer", "scheduler"]
 dict_choices = ["optimizer_kwargs", "scheduler_kwargs"]
-custom_converters = {"optimizer_kwargs": "eval_dict", "scheduler_kwargs": "eval_dict"}
 types = {"seed": "int", "penalty_lambda": "float", "max_iter": "int", "stop_criterion": "float",
          "stop_iters_to_check": "int", "method": "str", "k": "int", "p": "int", "q": "int",
          "initial_noise": "float", "change_scale_criterion": "float", "ctf_iters_to_check": "int",
-         "coarse_to_fine": "str", "minmax": "str", "metric_tradeoff_lambda": "float"}
+         "coarse_to_fine": "str", "minmax": "str", "metric_tradeoff_lambda": "float",
+         "optimizer_kwargs": "dict[str, float | int | bool | str]",
+         "scheduler_kwargs": "dict[str, float | int | bool | str]"}
 
 
 class ContextUpdater(ContextHook):
@@ -41,11 +42,7 @@ class ContextUpdater(ContextHook):
                     param_dict["calls"] = values
                 complex_params[param] = param_dict
             elif param in context:
-                annot = custom_converters.get(param, "")
-                if annot:
-                    annot = f"Annotated[str, Parameter(converter={annot})]"
-                else:
-                    annot = types[param]
+                param_type = types[param]
                 val = context[param]
                 if isinstance(val, str) and param not in dict_choices:
                     # then this is actually a list
@@ -72,11 +69,11 @@ class ContextUpdater(ContextHook):
                             val = [val]
                         default = val[0]
                         val = {non_kwargs_param["choices"][0]: val}
-                    dict_params[param] = (annot, val, default)
+                    dict_params[param] = (param_type, val, default)
                 else:
                     if not isinstance(val, list):
                         val = [val]
-                    simple_params[param] = (annot, val)
+                    simple_params[param] = (param_type, val)
         if "status_plot" in context and context["status_plot"]:
             if context["status_plot"].endswith(".py"):
                 file_contents = pathlib.Path(context["status_plot"]).read_text()
