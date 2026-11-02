@@ -1,6 +1,6 @@
 _jinja_extensions:
     - copier_templates_extensions.TemplateExtensionLoader
-    - extensions/context.py:ContextUpdater
+    - context.py:ContextUpdater
 
 _subdirectory:
   template
