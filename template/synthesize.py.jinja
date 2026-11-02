@@ -1,4 +1,3 @@
-import ast
 import time
 from cyclopts import App, Parameter, Token
 from typing import Literal, Annotated, Sequence
@@ -46,7 +45,7 @@ def load_image(path: Path):
 def main(
 {%- for key in search_params -%}
 {% if key in render_complex_params %}
-    {{ key }}: {% if key in render_load_params %}Path | {% endif %}Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}],
+    {{ key }}: Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}]{% if key in render_load_params %} | Path{% endif %},
 {%- elif key in render_simple_params %}
     {{ key }}: {{ render_simple_params[key][0] }},
 {%- else %}
@@ -55,7 +54,7 @@ def main(
 {%- endfor -%}
 {%- for key in non_search_params -%}
 {% if key in render_complex_params %}
-    {{ key }}: {% if key in render_load_params %}Path | {% endif %}Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}] = "{{ render_complex_params[key]["choices"][0] }}",
+    {{ key }}: Literal[{% for f in render_complex_params[key]["choices"] %}"{{ f }}", {% endfor %}]{% if key in render_load_params %} | Path{% endif %} = "{{ render_complex_params[key]["choices"][0] }}",
 {%- elif key in render_simple_params %}
     {{ key }}: {{ render_simple_params[key][0] }} = {{ render_simple_params[key][1][0] }},
 {%- else %}
