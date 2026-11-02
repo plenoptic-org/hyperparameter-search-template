@@ -33,10 +33,14 @@ class ContextUpdater(ContextHook):
                     file_contents = pathlib.Path(context[param]).read_text()
                     tree = ast.parse(file_contents)
                     # don't bring in private functions
-                    funcs = [f.name for f in tree.body if isinstance(f, ast.FunctionDef)
+                    funcs = [f for f in tree.body if isinstance(f, ast.FunctionDef)
                              if not f.name.startswith("_")]
-                    param_dict["choices"] = funcs
-                    param_dict["calls"] = [f"{f}()" for f in funcs]
+                    param_dict["choices"] = [f.name for f in funcs]
+                    calls = []
+                    for f in funcs:
+                        args = ','.join([f"{a.arg}" for a in f.args.args])
+                        calls.append(f"{f.name}({args})")
+                    param_dict["calls"] = calls
                     param_dict["functions"] = file_contents
                 else:
                     values = context[param].split(";")

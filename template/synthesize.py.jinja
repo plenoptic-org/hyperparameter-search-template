@@ -83,11 +83,11 @@ def main(
     {% for f in hyp_dict["choices"] -%}
     {% if loop.first %}if{% else %}elif{% endif %} {{ key }} == "{{ f }}":
         {{ key }} = {{ hyp_dict["calls"][loop.index0] }}
+    {% endfor -%}
     {% if key in render_load_params -%}
     else:
         {{ key }} = load_image({{ key }})
     {% endif -%}
-    {% endfor -%}
     {% endfor -%}
     {% if model %}
     po.remove_grad(model)
