@@ -47,8 +47,10 @@ def main(
     params["{{ key }}"] = [{% for f in hyp_dict["disbatch_choices"] %}"{{ f }}", {% endfor %}]
     {%- endfor %}
     {%- for key, (_, value) in render_simple_params.items() %}
-    params["{{ key }}"] = [{% for v in value %}"{{ v }}", {% endfor %}]
+    params["{{ key }}"] = [{% for v in value %}{{ v }}, {% endfor %}]
     {%- endfor %}
+    # everything in params needs to be a string
+    params = {k: [str(v_) for v_ in v] for k, v in params.items()}
     {%- for key, (_, value, _) in render_dict_params.items() %}
     {{ key }} = {{ value }}
     {%- endfor %}

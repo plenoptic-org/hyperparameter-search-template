@@ -43,7 +43,6 @@ optimizer:
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
   when: "{{ 'optimizer' in search_params }}"
   default: "torch.optim.Adam"
-  validator: "{% if not (optimizer | regex_search('^torch.optim')) %}Use optimizer from torch{% endif %}"
 
 optimizer_kwargs:
   type: str
@@ -61,7 +60,6 @@ scheduler:
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
   when: "{{ 'scheduler' in search_params }}"
   default: "None"
-  validator: "{% if not (scheduler | regex_search('^torch.optim|None')) %}Use scheduler from torch or None{% endif %}"
 
 scheduler_kwargs:
   type: str
@@ -93,11 +91,10 @@ stop_iters_to_check:
   default: 50
 
 method:
-  type: str
-  help: "Eigendistortion method: power, exact, randomized_svd"
-  default: power
+  type: yaml
+  help: "Eigendistortion method: power, exact, randomized_svd (or a list containing those values)"
+  default: 'power'
   when: "{{ 'method' in search_params }}"
-  validator: "{% if method not in ['power', 'exact', 'randomized_svd'] %}Pick a valid method!{% endif %}"
 
 k:
   type: json
@@ -136,11 +133,10 @@ ctf_iters_to_check:
   default: 50
 
 coarse_to_fine:
-  type: str
-  help: "How to do coarse-to-fine: together, separate"
+  type: yaml
+  help: "How to do coarse-to-fine: together, separate (or list containing those values)"
   when: "{{ 'coarse_to_fine' in search_params }}"
   default: together
-  validator: "{% if coarse_to_fine not in ['together', 'separate'] %}Pick a valid value!{% endif %}"
 
 optimized_metric:
   type: path
@@ -153,14 +149,13 @@ reference_metric:
   when: "{{ 'reference_metric' in all_params }}"
 
 minmax:
-  type: str
-  help: "What to do to optimized_metric: min, max"
+  type: yaml
+  help: "What to do to optimized_metric: min, max (or list containing those values)"
   when: "{{ 'minmax' in search_params }}"
   default: min
-  validator: "{% if minmax not in ['min', 'max'] %}Pick a valid value!{% endif %}"
 
 metric_tradeoff_lambda:
-  type: str
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('metric_tradeoff_lambda', 'floats') }}"
+  type: yaml
+  help: "Valid values: None or floats (or list containing those values)"
   when: "{{ 'metric_tradeoff_lambda' in search_params }}"
   default: None

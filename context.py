@@ -18,6 +18,26 @@ types = {"seed": "int", "penalty_lambda": "float", "max_iter": "int", "stop_crit
          "optimizer_kwargs": "dict[str, float | int | bool | str]",
          "scheduler_kwargs": "dict[str, float | int | bool | str]"}
 
+def validate(name, value):
+    if name == "optimizer":
+        value = value.split(";")
+        if not all([v.startswith("torch") for v in value]):
+            raise ValueError("optimizers must be torch objects!")
+    elif name == "scheduler":
+        value = value.split(";")
+        if not all([v.startswith("torch") or v == "None" for v in value]):
+            raise ValueError("schedulers must be torch objects or None!")
+    elif name in ["method", "coarse_to_fine", "minmax"]:
+        if not isinstance(value, list):
+            value = [value]
+        accepted_vals = {
+            "method": {"power", "exact", "randomized_svd"},
+            "coarse_to_fine": {"together", "separate"},
+            "minmax": {"min", "max"},
+        }
+        if any([v not in accepted_vals[name] for v in value]):
+            raise ValueError(f"values for {name} must be one of {accepted_vals[name]}")
+
 
 class ContextUpdater(ContextHook):
     def hook(self, context):
@@ -31,6 +51,7 @@ class ContextUpdater(ContextHook):
             if param in complex_choices and param in context:
                 param_dict = {}
                 val = context[param]
+                validate(param, val)
                 if val.endswith(".py"):
                     file_contents = pathlib.Path(val).read_text()
                     tree = ast.parse(file_contents)
@@ -71,6 +92,7 @@ class ContextUpdater(ContextHook):
             elif param in context:
                 param_type = types[param]
                 val = context[param]
+                validate(param, val)
                 if isinstance(val, str) and param not in dict_choices:
                     # then this is actually a list
                     if val.startswith("["):
@@ -100,6 +122,8 @@ class ContextUpdater(ContextHook):
                 else:
                     if not isinstance(val, list):
                         val = [val]
+                    if param_type == "str":
+                        val = [f'"{v}"' for v in val]
                     simple_params[param] = (param_type, val)
         if "status_plot" in context and context["status_plot"]:
             if context["status_plot"].endswith(".py"):
@@ -112,10 +136,10 @@ class ContextUpdater(ContextHook):
                                           "calls": [f"{f}" for f in funcs]}
             else:
                 raise ValueError(f"status_plot must be empty or path to a script! but got {context['status_plot']}")
-        return {
+        context.update({
             "render_complex_params": complex_params,
             "render_load_params": load_in_paths,
             "render_simple_params": simple_params,
             "render_dict_params": dict_params,
             "non_search_params": non_search_params,
-        }
+        })
