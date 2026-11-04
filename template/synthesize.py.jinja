@@ -27,11 +27,11 @@ def eval_torch(type_, tokens: Sequence[Token]):
 
 
 def load_image(path: Path):
-    if path.suffix == ".png":
-        return po.load_images(path)
-    elif path.suffix == ".pt":
+    if path.suffix == ".pt":
         loaded = torch.load(path, weights_only=True)
         return loaded["_{{ synthesis_object | lower }}"]
+    else:
+        return po.load_images(path)
 
 
 {% for hyp_dict in render_complex_params.values() -%}
@@ -124,10 +124,10 @@ def main(
     img_path = out_path.with_suffix(".png")
     po.plot.synthesis_imshow(synth).figure.savefig(img_path)
     {% if status_plot %}
-    {%- for func in status_plot["calls"] -%}
+    {% for func in status_plot["calls"] %}
     plot_path = out_path.with_name(f"{out_path.stem}-{{func}}.svg")
     {{ func }}(synth).savefig(plot_path)
-    {%- endfor -%}
+    {% endfor %}
     {% else %}
     plot_path = out_path.with_suffix(".svg")
     po.plot.synthesis_status(synth).savefig(plot_path)

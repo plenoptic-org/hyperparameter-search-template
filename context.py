@@ -2,6 +2,7 @@
 from copier_template_extensions import ContextHook
 import ast
 import pathlib
+import shutil
 
 
 complex_choices = ["image", "model", "loss_function", "penalty_function",
@@ -29,8 +30,9 @@ class ContextUpdater(ContextHook):
         for param in all_params:
             if param in complex_choices and param in context:
                 param_dict = {}
-                if context[param].endswith(".py"):
-                    file_contents = pathlib.Path(context[param]).read_text()
+                val = context[param]
+                if val.endswith(".py"):
+                    file_contents = pathlib.Path(val).read_text()
                     tree = ast.parse(file_contents)
                     # don't bring in private functions
                     funcs = [f for f in tree.body if isinstance(f, ast.FunctionDef)
@@ -42,10 +44,29 @@ class ContextUpdater(ContextHook):
                         calls.append(f"{f.name}({args})")
                     param_dict["calls"] = calls
                     param_dict["functions"] = file_contents
+                    param_dict["disbatch_choices"] = param_dict["choices"]
                 else:
-                    values = context[param].split(";")
-                    param_dict["choices"] = [i.split('(')[0].split(".")[-1] for i in values]
-                    param_dict["calls"] = values
+                    values = val.split(";")
+                    choices = []
+                    calls = []
+                    disbatch_choices = []
+                    for v in values:
+                        if (path_v := pathlib.Path(v)).exists():
+                            if pathlib.Path(context["_copier_conf"]["dst_path"]).exists():
+                                shutil.copy(path_v, context["_copier_conf"]["dst_path"] / path_v.name)
+                            disbatch_choices.append(path_v.name)
+                        else:
+                            choice = ""
+                            for v_ in v.split("("):
+                                choice += v_.split(".")[-1].split(",")[0].strip()
+                                if choice not in choices:
+                                    break
+                                choice += "_"
+                            choices.append(choice)
+                            calls.append(v)
+                    param_dict["calls"] = calls
+                    param_dict["choices"] = choices
+                    param_dict["disbatch_choices"] = choices + disbatch_choices
                 complex_params[param] = param_dict
             elif param in context:
                 param_type = types[param]

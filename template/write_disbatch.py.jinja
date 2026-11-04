@@ -9,6 +9,7 @@ import warnings
 
 app = App()
 
+
 def dict_str_to_path(v):
     for char in ["{", "}", " ", "'",'"']:
         v = v.replace(char, "")
@@ -28,6 +29,7 @@ def get_specific_kwargs(kwargs_dict, arg_string):
 def main(
     base_out: Path = Path("{{ base_out }}"),
     for_disbatch: bool = True,
+    write_to_log: bool = True,
     out_file: Path = Path("disbatch.txt"),
 ):
     commands = []
@@ -42,7 +44,7 @@ def main(
     # shouldn't need to re-generate synthesize.py
     params = OrderedDict()
     {%- for key, hyp_dict in render_complex_params.items() %}
-    params["{{ key }}"] = [{% for f in hyp_dict["choices"] %}"{{ f }}", {% endfor %}]
+    params["{{ key }}"] = [{% for f in hyp_dict["disbatch_choices"] %}"{{ f }}", {% endfor %}]
     {%- endfor %}
     {%- for key, (_, value) in render_simple_params.items() %}
     params["{{ key }}"] = [{% for v in value %}"{{ v }}", {% endfor %}]
@@ -82,12 +84,15 @@ def main(
         vals["{{ key.split("_")[0] }}"] = val
         vals["{{ key }}"] = kw
         {%- endfor %}
-        outfile = base_out / path_template.format(**vals)
+        outfile = base_out / path_template.format(**{k: v.replace(".", "-") for k, v in vals.items()})
         if outfile.exists():
             warnings.warn(f"{outfile=} exists, skipping...")
             continue
         cmd = "{{ python_command }} synthesize.py " + args_template.format(**vals)
-        commands.append(f"({cluster_prefix} {cmd} --out-path {outfile}) &> {outfile.with_suffix('.log')} ")
+        cmd = f"({cluster_prefix} {cmd} --out-path {outfile})"
+        if write_to_log:
+            cmd += f" &> {outfile.with_suffix('.log')}"
+        commands.append(cmd)
 
     out_file.write_text('\n'.join(commands))
 

@@ -133,7 +133,8 @@ def main(
     if input_path.suffix == ".csv":
         df = pd.read_csv(input_path)
     else:
-        df = pd.concat([pd.read_csv(f) for f in input_path.glob("*csv")])
+        df = pd.concat([pd.read_csv(f) for f in input_path.glob("*csv")
+                        if f != output_path.with_suffix(".csv")])
     df["image_name"] = df["image"]
     df.to_csv(output_path.with_suffix(".csv"), index=False)
 
