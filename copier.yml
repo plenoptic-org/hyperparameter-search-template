@@ -143,3 +143,8 @@ python_command:
   type: str
   default: uv run
   help: python command to use for running synthesize.py. If you use uv, this should be uv run. Else, should probably be python
+
+cpu_only:
+  type: bool
+  default: False
+  help: Will you only run this on the CPU? If True, we'll tell uv to install torch from the cpu-only index.
