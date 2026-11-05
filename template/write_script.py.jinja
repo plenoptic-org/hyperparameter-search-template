@@ -4,7 +4,8 @@ import itertools
 import stat
 from collections import OrderedDict
 from pathlib import Path
-from cyclopts import App
+from cyclopts import App, Parameter
+from typing import Annotated
 import warnings
 
 
@@ -32,6 +33,8 @@ def main(
     to_script: bool = False,
     write_to_log: bool = True,
     out_file: Path = Path("hyperparam_search.sh"),
+    device: Annotated[list[str], Parameter(consume_multiple=True)] = ["cpu"],
+    dtype:  Annotated[list[str], Parameter(consume_multiple=True)] = ["torch.float32"],
 ):
     """Write script calling synthesize.py for all combinations of hyperparameters.
 
@@ -52,6 +55,10 @@ def main(
         (created alongside the results files) or stdout/stderr
     out_file :
         Name of the file to create.
+    device :
+        Which device to run on. If a list of devices, will do all of them.
+    dtype :
+        Which dtype to use. If a list of dtypes, will do all of them.
     """
     commands = []
 
@@ -70,6 +77,8 @@ def main(
     {%- for key, (_, value) in render_simple_params.items() %}
     params["{{ key }}"] = [{% for v in value %}{{ v }}, {% endfor %}]
     {%- endfor %}
+    params["dtype"] = dtype
+    params["device"] = device
     # everything in params needs to be a string
     params = {k: [str(v_) for v_ in v] for k, v in params.items()}
     {%- for key, (_, value, _) in render_dict_params.items() %}

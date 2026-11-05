@@ -113,10 +113,10 @@ def construct_data(synth_params, synth_name, search_params, all_params=None):
     return choices
 
 
-def _run_test(choice, working_dir, plot_y="synthesis_loss"):
+def _run_test(choice, working_dir, plot_y="synthesis_loss", addt_script_args=()):
     copier.run_copy(".", working_dir, data=choice, unsafe=True, overwrite=True)
     proc = subprocess.run(
-        ["python", "write_script.py", "--to-script", "--no-write-to-log"],
+        ["python", "write_script.py", "--to-script", "--no-write-to-log", *addt_script_args],
         cwd=working_dir,
     )
     if proc.returncode != 0:
@@ -154,6 +154,15 @@ def test_metamer(subtests, search_param):
         with subtests.test(msg=choices[i], choice=choice, i=i):
             tmp = test_path / f"test_metamer_{search_param}_{i}"
             _run_test(choice, tmp)
+
+
+def test_dtype(subtests):
+    test_path = Path("tests")
+    choices = construct_data(met_params, "Metamer", ["image"])
+    for i, choice in enumerate(choices):
+        with subtests.test(msg=choices[i], choice=choice, i=i):
+            tmp = test_path / f"test_status_plot_{status_plot}_{i}"
+            _run_test(choice, tmp, addt_script_args=("--dtype", "torch.float32", "torch.float64"))
 
 
 @pytest.mark.parametrize(
