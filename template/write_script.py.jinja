@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import itertools
+import stat
 from collections import OrderedDict
 from pathlib import Path
 from cyclopts import App
@@ -28,15 +29,35 @@ def get_specific_kwargs(kwargs_dict, arg_string):
 @app.default
 def main(
     base_out: Path = Path("{{ base_out }}"),
-    for_disbatch: bool = True,
+    to_script: bool = False,
     write_to_log: bool = True,
-    out_file: Path = Path("disbatch.txt"),
+    out_file: Path = Path("hyperparam_search.sh"),
 ):
+    """Write script calling synthesize.py for all combinations of hyperparameters.
+
+    Created file contains independent calls to synthesize.py, each on a separate line.
+    This file can be executed as a bash script (in which case, you should pass
+    --to-script) or used as input to other process.
+
+    Parameters
+    ----------
+    base_out :
+        Base output directory. Results files and logs will be placed within this
+        directory.
+    to_script :
+        Whether the created file will be executed as a bash script, in which case
+        we add ``set -euxo pipefail`` at the top and make the resulting file executable.
+    write_to_log :
+        Whether each call to synthesize.py should write its output to a log file
+        (created alongside the results files) or stdout/stderr
+    out_file :
+        Name of the file to create.
+    """
     commands = []
 
     # These can be modified if you wish to change them.
-    if not for_disbatch:
-        commands.append("set -euxo pipefail")
+    if to_script:
+        commands.extend(["#!/usr/bin/env bash", "set -euxo pipefail"])
     cluster_prefix = "{{ cluster_prefix }}"
 
     # Edit the following lines in order to modify what values you will search over. As
@@ -44,7 +65,7 @@ def main(
     # shouldn't need to re-generate synthesize.py
     params = OrderedDict()
     {%- for key, hyp_dict in render_complex_params.items() %}
-    params["{{ key }}"] = [{% for f in hyp_dict["disbatch_choices"] %}"{{ f }}", {% endfor %}]
+    params["{{ key }}"] = [{% for f in hyp_dict["script_choices"] %}"{{ f }}", {% endfor %}]
     {%- endfor %}
     {%- for key, (_, value) in render_simple_params.items() %}
     params["{{ key }}"] = [{% for v in value %}{{ v }}, {% endfor %}]
@@ -97,6 +118,7 @@ def main(
         commands.append(cmd)
 
     out_file.write_text('\n'.join(commands))
+    out_file.chmod(out_file.stat().st_mode | stat.S_IEXEC)
 
 if __name__ == "__main__":
     app()

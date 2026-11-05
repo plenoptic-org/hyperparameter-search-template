@@ -8,14 +8,13 @@ For now, this assumes that you are synthesizing images (which matters because of
 - from scripts, choices will be non-private functions (importantly, not classes)
 - Explain about status plot, can be any number, must only require synth object and return figure to save
 - add note about UV_PROJECT_ENVIRONMENT and resharing environments
-- write how image, initial_image can also accept paths (but this won't show up in help string), nor will we add any to write_disbatch.py, you'll have to add on your own
+- write how image, initial_image can also accept paths (but this won't show up in help string), nor will we add any to write_script.py, you'll have to add on your own
   - how to use this functionality to do multi-stage synthesis
 
 ## TODO
 - weirdness with yaml defaults -- try making them lists?
 - can I replace the ;-separated strings with a list of strings?
-- add dtype, device to write disbatch / create html
-- rename disbatch stuff to scripts
+- add dtype, device to write script / create html
 - eigendist should raise error on max_iter if not power
   - should save delta eigenval for eigendist, since that's what we need
 

@@ -115,12 +115,12 @@ def construct_data(synth_params, synth_name, search_params, all_params=None):
 def _run_test(choice, working_dir, plot_y="synthesis_loss"):
     copier.run_copy(".", working_dir, data=choice, unsafe=True, overwrite=True)
     proc = subprocess.run(
-        ["python", "write_disbatch.py", "--no-for-disbatch", "--no-write-to-log"],
+        ["python", "write_script.py", "--to-script", "--no-write-to-log"],
         cwd=working_dir,
     )
     if proc.returncode != 0:
         raise Exception(proc)
-    proc = subprocess.run(["bash", "disbatch.txt"], cwd=working_dir)
+    proc = subprocess.run(["bash", "hyperparam_search.sh"], cwd=working_dir)
     if proc.returncode != 0:
         raise Exception(proc)
     proc = subprocess.run(

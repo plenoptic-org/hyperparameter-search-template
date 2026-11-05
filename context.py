@@ -65,17 +65,17 @@ class ContextUpdater(ContextHook):
                         calls.append(f"{f.name}({args})")
                     param_dict["calls"] = calls
                     param_dict["functions"] = file_contents
-                    param_dict["disbatch_choices"] = param_dict["choices"]
+                    param_dict["script_choices"] = param_dict["choices"]
                 else:
                     values = val.split(";")
                     choices = []
                     calls = []
-                    disbatch_choices = []
+                    script_choices = []
                     for v in values:
                         if (path_v := pathlib.Path(v)).exists():
                             if pathlib.Path(context["_copier_conf"]["dst_path"]).exists():
                                 shutil.copy(path_v, context["_copier_conf"]["dst_path"] / path_v.name)
-                            disbatch_choices.append(path_v.name)
+                            script_choices.append(path_v.name)
                         else:
                             choice = ""
                             for v_ in v.split("("):
@@ -87,7 +87,7 @@ class ContextUpdater(ContextHook):
                             calls.append(v)
                     param_dict["calls"] = calls
                     param_dict["choices"] = choices
-                    param_dict["disbatch_choices"] = choices + disbatch_choices
+                    param_dict["script_choices"] = choices + script_choices
                 complex_params[param] = param_dict
             elif param in context:
                 param_type = types[param]
