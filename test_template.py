@@ -131,6 +131,11 @@ def _run_test(choice, working_dir, plot_y="synthesis_loss", addt_script_args=())
         raise Exception(proc)
 
 
+@pytest.fixture
+def tests_dir():
+    return Path("tests")
+
+
 met_params = [
     "seed",
     "image",
@@ -147,34 +152,31 @@ met_params = [
 
 
 @pytest.mark.parametrize("search_param", met_params)
-def test_metamer(subtests, search_param):
-    test_path = Path("tests")
+def test_metamer(subtests, search_param, tests_dir):
     choices = construct_data(met_params, "Metamer", [search_param])
     for i, choice in enumerate(choices):
         with subtests.test(msg=choices[i], choice=choice, i=i):
-            tmp = test_path / f"test_metamer_{search_param}_{i}"
+            tmp = tests_dir / f"test_metamer_{search_param}_{i}"
             _run_test(choice, tmp)
 
 
-def test_dtype(subtests):
-    test_path = Path("tests")
+def test_dtype(subtests, tests_dir):
     choices = construct_data(met_params, "Metamer", ["image"])
     for i, choice in enumerate(choices):
         with subtests.test(msg=choices[i], choice=choice, i=i):
-            tmp = test_path / f"test_status_plot_{status_plot}_{i}"
+            tmp = tests_dir / f"test_dtype_{i}"
             _run_test(choice, tmp, addt_script_args=("--dtype", "torch.float32", "torch.float64"))
 
 
 @pytest.mark.parametrize(
     "status_plot", ["test_files/plot.py", "test_files/multiple_plots.py"]
 )
-def test_status_plot(subtests, status_plot):
-    test_path = Path("tests")
+def test_status_plot(subtests, status_plot, tests_dir):
     choices = construct_data(met_params, "Metamer", ["image"])
     for i, choice in enumerate(choices):
         choice["status_plot"] = status_plot
         with subtests.test(msg=choices[i], choice=choice, i=i):
-            tmp = test_path / f"test_status_plot_{status_plot}_{i}"
+            tmp = tests_dir / f"test_status_plot_{status_plot}_{i}"
             _run_test(choice, tmp)
 
 
@@ -197,8 +199,7 @@ metctf_params = [
 
 
 @pytest.mark.parametrize("search_param", metctf_params)
-def test_metamerCTF(subtests, search_param):
-    test_path = Path("tests")
+def test_metamerCTF(subtests, search_param, tests_dir):
     all_params = PARAMS.copy()
     # replace models with file that has ctf-supported models
     all_params["model"] = ["test_files/models_ctf.py"]
@@ -207,7 +208,7 @@ def test_metamerCTF(subtests, search_param):
     choices = construct_data(metctf_params, "MetamerCTF", [search_param], all_params)
     for i, choice in enumerate(choices):
         with subtests.test(msg=choices[i], choice=choice, i=i):
-            tmp = test_path / f"test_metamerCTF_{search_param}_{i}"
+            tmp = tests_dir / f"test_metamerCTF_{search_param}_{i}"
             _run_test(choice, tmp)
 
 
@@ -229,12 +230,11 @@ mad_params = [
 
 
 @pytest.mark.parametrize("search_param", mad_params)
-def test_mad(subtests, search_param):
-    test_path = Path("tests")
+def test_mad(subtests, search_param, tests_dir):
     choices = construct_data(mad_params, "MADCompetition", [search_param])
     for i, choice in enumerate(choices):
         with subtests.test(msg=choices[i], choice=choice, i=i):
-            tmp = test_path / f"test_mad_{search_param}_{i}"
+            tmp = tests_dir / f"test_mad_{search_param}_{i}"
             _run_test(choice, tmp)
 
 
@@ -242,10 +242,9 @@ eig_params = ["seed", "image", "model", "method", "k", "p", "q", "stop_criterion
 
 
 @pytest.mark.parametrize("search_param", eig_params)
-def test_eig(subtests, search_param):
-    test_path = Path("tests")
+def test_eig(subtests, search_param, tests_dir):
     choices = construct_data(eig_params, "Eigendistortion", [search_param])
     for i, choice in enumerate(choices):
         with subtests.test(msg=choices[i], choice=choice, i=i):
-            tmp = test_path / f"test_eig_{search_param}_{i}"
+            tmp = tests_dir / f"test_eig_{search_param}_{i}"
             _run_test(choice, tmp, "max_iter")
