@@ -12,7 +12,6 @@ For now, this assumes that you are synthesizing images (which matters because of
   - how to use this functionality to do multi-stage synthesis
 
 ## TODO
-- eigendist should raise error on max_iter if not power
   - should save delta eigenval for eigendist, since that's what we need
 
 - update param_questions.yml helps

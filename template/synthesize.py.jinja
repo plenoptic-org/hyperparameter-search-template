@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import torch
 import pandas as pd
 from pathlib import Path
+import warnings
 
 app = App()
 
@@ -105,6 +106,11 @@ def main(
     )
     {% endif %}
     print(synth)
+    {% if synthesis_object == "Eigendistortion" %}
+    # 100 is the default max_iter value
+    if method != "power" and max_iter != 100:
+        warnings.warn("max_iter only affects method='power', it has no effect on other methods!")
+    {% endif %}
     device = torch.device(device)
     synth.to(device)
     synth.to(dtype)
