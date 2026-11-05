@@ -104,7 +104,7 @@ def main(
     keys = list(params.keys())
 
     if max_iter is not None:
-        params["max_iter"] = max_iter
+        params["max_iter"] = [max_iter]
 
     path_keys = [k for k, v in params.items() if len(v) > 1]
     {%- for key, (_, value, _) in render_dict_params.items() %}
