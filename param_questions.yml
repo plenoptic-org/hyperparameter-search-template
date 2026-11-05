@@ -93,7 +93,7 @@ stop_iters_to_check:
 method:
   type: yaml
   help: "Eigendistortion method: power, exact, randomized_svd (or a list containing those values)"
-  default: 'power'
+  default: ['power']
   when: "{{ 'method' in search_params }}"
 
 k:
@@ -136,7 +136,7 @@ coarse_to_fine:
   type: yaml
   help: "How to do coarse-to-fine: together, separate (or list containing those values)"
   when: "{{ 'coarse_to_fine' in search_params }}"
-  default: together
+  default: ['together']
 
 optimized_metric:
   type: path
@@ -152,10 +152,10 @@ minmax:
   type: yaml
   help: "What to do to optimized_metric: min, max (or list containing those values)"
   when: "{{ 'minmax' in search_params }}"
-  default: min
+  default: ['min']
 
 metric_tradeoff_lambda:
   type: yaml
   help: "Valid values: None or floats (or list containing those values)"
   when: "{{ 'metric_tradeoff_lambda' in search_params }}"
-  default: None
+  default: ['None']

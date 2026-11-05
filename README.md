@@ -12,7 +12,6 @@ For now, this assumes that you are synthesizing images (which matters because of
   - how to use this functionality to do multi-stage synthesis
 
 ## TODO
-- weirdness with yaml defaults -- try making them lists?
 - can I replace the ;-separated strings with a list of strings?
 - add dtype, device to write script / create html
 - eigendist should raise error on max_iter if not power
