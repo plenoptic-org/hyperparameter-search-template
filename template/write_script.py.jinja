@@ -34,6 +34,7 @@ def main(
     to_script: bool = False,
     write_to_log: bool = True,
     out_file: Path = Path("hyperparam_search.sh"),
+    max_iter: None | int = None,
     device: Annotated[list[str], Parameter(consume_multiple=True)] = ["cpu"],
     dtype:  Annotated[list[str], Parameter(consume_multiple=True)] = ["torch.float32"],
 ):
@@ -56,6 +57,10 @@ def main(
         (created alongside the results files) or stdout/stderr
     out_file :
         Name of the file to create.
+    max_iter :
+        Number of iterations to run synthesis for. Setting max_iter in this manner will give
+        all calls to synthesize.py identical values. If you instead wish to loop over max_iter,
+        edit this file and set its value in the params dictionary.
     device :
         Which device to run on. If a list of devices, will do all of them.
     dtype :
@@ -97,6 +102,9 @@ def main(
     params["{{ key.split('_')[0] }}"] = tmp
     {%- endfor %}
     keys = list(params.keys())
+
+    if max_iter is not None:
+        params["max_iter"] = max_iter
 
     path_keys = [k for k, v in params.items() if len(v) > 1]
     {%- for key, (_, value, _) in render_dict_params.items() %}

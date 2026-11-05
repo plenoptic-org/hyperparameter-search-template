@@ -130,7 +130,7 @@ status_plot:
   help: Would you like to save a custom status plot? Leave blank to use plenoptic's built-in po.plot.synthesis_status
 
 base_out:
-  type: str
+  type: path
   help: Directory to save output into.
   default: /mnt/ceph/users/wbroderick/plenoptic_experiments/
 
