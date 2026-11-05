@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from copier_template_extensions import ContextHook
 import ast
+import json
 import pathlib
 import shutil
 
@@ -104,18 +105,19 @@ class ContextUpdater(ContextHook):
                             val = [v for v in val[1:-1].split(",")]
                 if param in dict_choices:
                     non_kwargs_param = complex_params.get(param.split("_")[0], {})
+                    val = ast.literal_eval(val)
                     if non_kwargs_param and len(non_kwargs_param["choices"]) > 1:
-                        val = ast.literal_eval(val)
                         new_val = {}
                         for k, v in val.items():
                             if not isinstance(v, list):
                                 v = [v]
-                            new_val[k] = [str(v_) for v_ in v]
+                            new_val[k] = [json.dumps(v_) for v_ in v]
                         val = new_val
                         default = {}
                     else:
                         if not isinstance(val, list):
                             val = [val]
+                        val = [json.dumps(v) for v in val]
                         default = val[0]
                         val = {non_kwargs_param["choices"][0]: val}
                     dict_params[param] = (param_type, val, default)

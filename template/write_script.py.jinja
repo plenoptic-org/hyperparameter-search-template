@@ -16,15 +16,16 @@ def dict_str_to_path(v):
     for char in ["{", "}", " ", "'",'"']:
         v = v.replace(char, "")
     v = v.replace(":", "-")
-    return v.replace(",", "_")
+    v = v.replace(",", "_")
+    return v.replace(".", "-")
 
 
 def get_specific_kwargs(kwargs_dict, arg_string):
     val, i = arg_string.split("-")
     tmp = kwargs_dict.get(val, "{}")
-    if tmp:
+    if tmp != "{}":
         tmp = tmp[int(i)]
-    return val, dict_str_to_path(tmp)
+    return val, tmp, dict_str_to_path(tmp)
 
 
 @app.default
@@ -101,22 +102,25 @@ def main(
     {%- for key, (_, value, _) in render_dict_params.items() %}
     if any([len(v) > 1 for v in {{ key }}.values()]):
         path_keys.append("{{ key }}")
+        keys.append("{{ key }}")
     {%- endfor %}
     if len(path_keys) == 0:
         raise ValueError("Not searching over anything!")
     {% raw %}
     path_template = "_".join([f'{k}-{{{k}}}' for k in path_keys]) + ".pt"
-    args_template = " ".join([f'--{k} "{{{k}}}"' for k in keys])
+    args_template = " ".join([f"--{k} '{{{k}}}'" for k in keys])
     print(f"{path_template=}")
     {% endraw %}
     for vals in itertools.product(*params.values()):
         vals = OrderedDict({k: v for k, v in zip(keys, vals)})
+        path_vals = vals.copy()
         {%- for key, (_, value, _) in render_dict_params.items() %}
-        val, kw = get_specific_kwargs({{ key }}, vals['{{ key.split("_")[0] }}'])
+        val, kw, path_kw = get_specific_kwargs({{ key }}, vals['{{ key.split("_")[0] }}'])
         vals["{{ key.split("_")[0] }}"] = val
+        path_vals["{{ key }}"] = path_kw
         vals["{{ key }}"] = kw
         {%- endfor %}
-        outfile = base_out / path_template.format(**{k: v.replace(".", "-") for k, v in vals.items()})
+        outfile = base_out / path_template.format(**path_vals)
         if outfile.exists():
             warnings.warn(f"{outfile=} exists, skipping...")
             continue
