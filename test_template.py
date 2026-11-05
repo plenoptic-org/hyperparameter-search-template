@@ -7,13 +7,14 @@ from pathlib import Path
 import itertools
 import copier
 from collections import OrderedDict
-from context import types, load_in_paths, dict_choices, complex_choices
+from context import types, complex_choices
 
 
 ALL_PARAMS = complex_choices + list(types.keys())
 DEFAULTS = {
     "int": [1, [1, 10]],
     "float": [0.5, [0.5, 1.5]],
+    "None | float": [None, [None, 1]],
 }
 PARAMS = OrderedDict(
     {
