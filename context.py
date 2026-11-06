@@ -16,8 +16,8 @@ types = {"seed": "int", "penalty_lambda": "float", "max_iter": "int", "stop_crit
          "stop_iters_to_check": "int", "method": "str", "k": "int", "p": "int", "q": "int",
          "initial_noise": "float", "change_scale_criterion": "float", "ctf_iters_to_check": "int",
          "coarse_to_fine": "str", "minmax": "str", "metric_tradeoff_lambda": "None | float",
-         "optimizer_kwargs": "dict[str, float | int | bool | str]",
-         "scheduler_kwargs": "dict[str, float | int | bool | str]"}
+         "optimizer_kwargs": "Annotated[str, Parameter(converter=eval_ast)]",
+         "scheduler_kwargs": "Annotated[str, Parameter(converter=eval_ast)]"}
 
 def validate(name, value):
     if name == "optimizer":

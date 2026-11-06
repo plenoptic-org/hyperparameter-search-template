@@ -1,3 +1,4 @@
+import ast
 import time
 from cyclopts import App, Parameter, Token
 from typing import Literal, Annotated, Sequence
@@ -25,6 +26,10 @@ def eval_torch(type_, tokens: Sequence[Token]):
             return eval(value)
     else:
         return value
+
+
+def eval_ast(type_, tokens: Sequence[Token]):
+    return ast.literal_eval(tokens[0].value)
 
 
 def load_image(path: Path):
