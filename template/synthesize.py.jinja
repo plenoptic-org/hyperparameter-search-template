@@ -103,6 +103,9 @@ def main(
         {{ key }}={{ key }},
     {%- endfor %}
     )
+    device = torch.device(device)
+    synth.to(device)
+    synth.to(dtype)
     {% if setup_params %}
     synth.setup(
     {%- for key in setup_params %}
@@ -116,9 +119,6 @@ def main(
     if method != "power" and max_iter != 100:
         warnings.warn("max_iter only affects method='power', it has no effect on other methods!")
     {% endif %}
-    device = torch.device(device)
-    synth.to(device)
-    synth.to(dtype)
     start = time.time()
     synth.synthesize(
     {%- for key in synth_params %}
