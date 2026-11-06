@@ -111,13 +111,23 @@ class ContextUpdater(ContextHook):
                         for k, v in val.items():
                             if not isinstance(v, list):
                                 v = [v]
-                            new_val[k] = [json.dumps(v_) for v_ in v]
+                            # json.dumps does what we want with the single vs double
+                            # quotes so that we can pass dictionaries around on the
+                            # command line correctly, but it converts the booleans to
+                            # lower-case (since that is hte proper JSON standard). so we
+                            # just convert them back
+                            new_val[k] = [json.dumps(v_).replace("true", "True").replace("false", "False") for v_ in v]
                         val = new_val
                         default = {}
                     else:
                         if not isinstance(val, list):
                             val = [val]
-                        val = [json.dumps(v) for v in val]
+                        # json.dumps does what we want with the single vs double
+                        # quotes so that we can pass dictionaries around on the
+                        # command line correctly, but it converts the booleans to
+                        # lower-case (since that is hte proper JSON standard). so we
+                        # just convert them back
+                        val = [json.dumps(v).replace("true", "True").replace("false", "False") for v in val]
                         default = val[0]
                         val = {non_kwargs_param["choices"][0]: val}
                     dict_params[param] = (param_type, val, default)
