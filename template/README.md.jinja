@@ -30,3 +30,9 @@ The intended loop is as follows:
   - If you are changing hyperparameters which use built-in pythonic types (e.g., `seed`, `optimizer_kwargs`, `penalty_lambda`), then you can simply edit `write_script.py`.
   - If you are changing hyperparameters which use python objects (e.g., `image`, `model`, `optimizer`), then you should run `copier update` (`uvx --with copier_template_extensions copier update TARGET_DIRECTORY --trust`) in order to update the template.
     - The exception here is if you would like to point `image` / `initial_image` to a file on disk, either an image file or the output of an earlier synthesis run. In that case, you can add the path to that file directly to `write_script.py`
+
+## Virtual environments
+
+This directory includes a `pyproject.toml` file with dependencies, so you can a separate virtual environment for it.
+
+You can also create a shared virtual environment, if you are creating many of these. If you are using `uv`, you can use the environmental variable [`UV_PROJECT_ENVIRONMENT`](https://docs.astral.sh/uv/concepts/projects/config/#project-environment-path) so that you can still use `uv sync` / `uv run` etc. in the child directories.

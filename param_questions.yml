@@ -1,46 +1,48 @@
 seed:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('image', 'float') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('seed', 'int') }}"
   when: "{{ 'seed' in search_params }}"
   default: 0
 
 image:
   type: path
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('image', 'path') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('image', 'special') }}"
   when: "{{ 'image' in all_params }}"
 
 model:
   type: path
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('models', 'path') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('model', 'special') }}"
   when: "{{ 'model' in all_params }}"
 
 loss_function:
   type: path
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('loss_function', 'path') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('loss_function', 'special') }}"
   when: "{{ 'loss_function' in search_params }}"
   default: "po.metric.mse"
 
 penalty_function:
   type: path
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_function', 'path') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_function', 'special') }}"
   when: "{{ 'penalty_function' in search_params }}"
   default: "po.regularize.penalize_range"
 
 penalty_lambda:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'float') }}"
   when: "{{ 'penalty_lambda' in search_params }}"
   default: 0.1
 
 initial_image:
-  type: str
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
+  type: path
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('initial_image', 'special') }}"
   when: "{{ 'initial_image' in search_params }}"
   default: "torch.rand_like(image)"
 
 optimizer:
   type: str
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
+  help: |
+    Enter optimizer as a list of ;-separated strings. Each must be the name of a
+    torch optimizer. See README for details.
   when: "{{ 'optimizer' in search_params }}"
   default: "torch.optim.Adam"
 
@@ -57,7 +59,9 @@ optimizer_kwargs:
 
 scheduler:
   type: str
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'path') }}"
+  help: |
+    Enter scheduler as a list of ;-separated strings. Each must be the name of a
+    torch lr scheduler. See README for details.
   when: "{{ 'scheduler' in search_params }}"
   default: "None"
 
@@ -74,19 +78,19 @@ scheduler_kwargs:
 
 max_iter:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('max_iter', 'int') }}"
   when: "{{ 'max_iter' in search_params }}"
   default: 100
 
 stop_criterion:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('stop_criterion', 'float') }}"
   when: "{{ 'stop_criterion' in search_params }}"
   default: 0
 
 stop_iters_to_check:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('stop_iters_to_check', 'int') }}"
   when: "{{ 'stop_iters_to_check' in search_params }}"
   default: 50
 
@@ -98,37 +102,37 @@ method:
 
 k:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('k', 'int') }}"
   when: "{{ 'k' in search_params }}"
   default: 1
 
 p:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('p', 'int') }}"
   when: "{{ 'p' in search_params }}"
   default: 5
 
 q:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('q', 'int') }}"
   when: "{{ 'q' in search_params }}"
   default: 2
 
 initial_noise:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('initial_noise', 'float') }}"
   when: "{{ 'initial_noise' in search_params }}"
   default: 0.1
 
 change_scale_criterion:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('change_scale_criterion', 'float') }}"
   when: "{{ 'change_scale_criterion' in search_params }}"
   default: 0.01
 
 ctf_iters_to_check:
   type: json
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('penalty_lambda', 'floats') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('change_scale_criterion', 'int') }}"
   when: "{{ 'ctf_iters_to_check' in search_params }}"
   default: 50
 
@@ -140,12 +144,12 @@ coarse_to_fine:
 
 optimized_metric:
   type: path
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('optimized_metric', 'path') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('optimized_metric', 'special') }}"
   when: "{{ 'optimized_metric' in all_params }}"
 
 reference_metric:
   type: path
-  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('reference_metric', 'path') }}"
+  help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('reference_metric', 'special') }}"
   when: "{{ 'reference_metric' in all_params }}"
 
 minmax:
@@ -156,6 +160,6 @@ minmax:
 
 metric_tradeoff_lambda:
   type: yaml
-  help: "Valid values: None or floats (or list containing those values)"
+  help: "metric_tradeoff_lambda: None or floats (or list containing those values)"
   when: "{{ 'metric_tradeoff_lambda' in search_params }}"
   default: ['None']

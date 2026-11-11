@@ -5,6 +5,40 @@ _jinja_extensions:
 _subdirectory:
   template
 
+_message_before_copy: |
+  This template creates a directory with scripts for performing and understanding a
+  hyper-parameter search on plenoptic's synthesis objects. Intended uses include:
+
+    - Find out which optimizer and learning rate result in the lowest loss.
+
+    - Comparing alternative penalty functions in order to get synthesized image
+      with some appearance.
+
+    - Compare model variants to see which performs better.
+
+  Several of the hyper-parameters accept special values. See README at
+  https://github.com/plenoptic-org/hyperparameter-search-template
+  for more details.
+
+_message_after_copy: |
+  Examine the created .py scripts in {{ _copier_conf.dst_path }} to see whether they
+  look as intended. Intended workflow now is:
+
+    - Run write_script.py to create a script with all the synthesize.py calls. Note
+      the command-line arguments here (run write_script.py --help flag to see them),
+      which you probably want to set.
+    - Run the created script, either directly (to run all in sequence) or using a
+      tool such as disBatch (to do so in parallel / on a cluster).
+    - Run create_html.py to create an interactive visualization. Note that
+      command-line arguments *must* be set, in order to tell us e.g., what to put
+      on the x-axis, how to facet, etc.
+    - Examine the created html file to determine what hyperparameters were
+      most successful.
+    - Repeat.
+
+  See README at https://github.com/plenoptic-org/hyperparameter-search-template
+  for more details.
+
 synthesis_object:
   type: str
   help: Which type of synthesis object?
@@ -147,4 +181,4 @@ python_command:
 cpu_only:
   type: bool
   default: False
-  help: Will you only run this on the CPU? If True, we'll tell uv to install torch from the cpu-only index.
+  help: Will you only run this on the CPU? If yes, we'll tell uv to install torch from the cpu-only index.

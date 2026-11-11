@@ -33,6 +33,7 @@ All python scripts have command-line interfaces, call with `--help` to see their
 The intended loop is as follows:
 
 - Render the template, answering all questions.
+- Look over the created `.py` files, to ensure they act as expected.
 - Run `write_script.py` to create a script with all the `synthesize.py` calls. Note the command-line arguments here (run with the `--help` flag to see them), which you probably want to set.
 - Run the created script, either directly (to run all in sequence) or using a tool such as [disBatch](https://github.com/flatironinstitute/disBatch) (to do so in parallel / on a cluster).
 - Run `create_html.py` to create an interactive visualization. Note that command-line arguments *must* be set, in order to tell us e.g., what to put on the x-axis, how to facet, etc.
@@ -69,12 +70,15 @@ Any of the following:
 - A path to an existing image: `path/to/image.jpg`
 - A path to a saved synthesis object of the same type: `path/to/metamer.pt`
 - A path to a script: `path/to/my_images.py`. See [custom scripts](#custom-scripts) for more details.
+- A semicolon-connected list of the above: `po.data.curie();path/to/my_images.py`
 
 `image` cannot refer to any other variables, but `initial_image` can refer to `image` (e.g., you can set it to `torch.rand_like(image)`).
 
 Regardless of what you choose, you will always be able to pass the path to an existing image or synthesis object of the same type on the command-line to `synthesize.py`. To add these after `copier copy`, you can edit `write_script.py` directly. Unfortunately, I cannot figure out how to get the command-line help for that script to communicate that info.
 
 `synthesize.py` will move both images to the appropriate dtype and device.
+
+If a path is specified, the file will be copied into the rendered template directory. Note this is different from the behavior for custom scripts!
 
 Some complex examples:
 - `po.data.curie();po.data.einstein()`
@@ -84,8 +88,9 @@ Some complex examples:
 ### `model`
 
 Any of the following:
-- A single line which returns a plenoptic-compatible model: `po.models.Gaussian(30, cache_filt=True)`.
+- A single line which returns a [plenoptic-compatible model](https://docs.plenoptic.org/docs/tags/2.1.2/reference/models.html#model-requirements): `po.models.Gaussian(30, cache_filt=True)`.
 - A path to a script: `path/to/my_models.py`. See [custom scripts](#custom-scripts) for more details.
+- A semicolon-connected list of the above: `po.models.Gaussian(30, cache_filt=True);path/to/my_models.py`
 
 `synthesize.py` calls `po.remove_grad(model)`, `model.eval()`, `model.to(dtype)`, and `model.to(device)`, so you do not need to do these yourself.
 
@@ -95,21 +100,51 @@ A complex example: `po.models.Gaussian(30);my_models.py;po.models.PortillaSimonc
 
 ### `loss_function` / `penalty_function` / `optimized_metric` / `reference_metric`
 
+Any of the following:
+- A single line which returns a plenoptic-compatible [metric](https://docs.plenoptic.org/docs/tags/2.1.2/reference/models.html#metric-requirements), loss function, or penalty function:
+  - Metrics and loss functions accept two tensors and return a single scalar: `po.metric.mse`, `po.loss.l2_norm`
+  - Penalty functions accept a single tensor and return a single scalar: `po.regularize.penalize_range`
+- A path to a script: `path/to/my_metrics.py`. See [custom scripts](#custom-scripts) for more details.
+- A semicolon-connected list of the above: `po.metric.mse;path/to/my_functions.py`
+
+These definitions can refer to either `image` or (if relevant for the synthesis method) `model`.
+
+`synthesize.py` **does not** call `po.remove_grad`, `.eval()`, `.to(dtype)`, or `.to(device)` on any of these, so if you are using a `torch.nn.Module` instead of a function, you will need to do that yourself. (It is recommended to do this based on `image`, e.g., `metric.to(image.dtype)`).
+
 ### `optimizer` / `scheduler`
+
+Any of the following:
+- A single line which returns a pytorch optimizer / scheduler: `torch.optim.Adam`, `torch.optim.lr_scheduler.StepLR`.
+- A semicolon-connected list of the above: `torch.optim.Adam;torch.optim.LBFGS`
+
+Note that, unlike `model`, these objects should not be initialized! That is, the proper string is `torch.optim.Adam`, **not** `torch.optim.Adam()`.
 
 ### `optimizer_kwargs` / `scheduler_kwargs`
 
+Any of the following:
+- a single dictionary defining the keyword arguments, if you are only using one optimizer/scheduler and using the same for all relevant objects: `{'lr': 0.1}`
+- A list of dictionaries, if you are only using one optimizer/scheduler and wish to try different kwargs: `[{'lr': 0.1}, {'lr': 0.5}]`
+- A dictionary whose keys are the name of the optimizer/scheduler objects and whose values are one of the above: `{'Adam': {'lr': 0.1, 'amsgrad': False}, 'LBFGS': [{'lr': 0.1}, {'lr': 0.2}]}`
+
 ## `status_plot`
-- Explain about status plot, can be any number, must only require synth object and return figure to save
+
+Plots are important for understanding whether synthesis was successful or not. By default (when `status_plot` is unset), this template will set up `synthesize.py` so that it calls [`po.plot.synthesis_status(synth)`](https://docs.plenoptic.org/docs/tags/2.1.2/api/generated/plenoptic.plot.synthesis_status.html#plenoptic.plot.synthesis_status) to visualize the final synthesis status.
+
+If you wish to customize this, you can instead pass the path to a python script. This script should contain some number of functions which accept a single synthesis object and return a matplotlib figure. In that case, `synthesize.py` call each of the script's public functions (those that do not start with `_`) in sequence, saving each as a separate `svg`.
+
+Note that we always call `synthesis_imshow` and save the output as a `.png` file.
 
 ## Multi-stage synthesis
 
-- how to use this functionality to do multi-stage synthesis
+The ability to pass the path to an existing synthesis object to `initial_image` allows you to perform [multi-stage synthesis](https://docs.plenoptic.org/docs/tags/2.1.2/user_guide/penalties/datasaurus/general_principles.html#multi-stage-synthesis-can-help-when-things-are-hard), where the output of one synthesis procedure is used to initialize synthesis for another. This is particular useful when using [penalty functions](https://docs.plenoptic.org/docs/tags/2.1.2/user_guide/penalties/how_to_penalty.html).
+
+However, the script created by `write_script.py` has no sense of dependencies and thus the calls to `synthesize.py` may be run in any order. Thus, if you are performing multi-stage synthesis, you should place the relevant calls in separate scripts: first, call `write_script.py` for those `synthesize.py` runs that with no dependencies, and run the resulting script. Then, edit `write_script.py` to point `initial_image` to the correct files, and repeat. If you have a more complex setup, it may be worth looking into a workflow manager, such as [snakemake](https://snakemake.readthedocs.io/).
 
 ## Custom scripts
-- from scripts, choices will be non-private functions (importantly, not classes)
 
-## TODO
-- should save delta eigenval for eigendist, since that's what we need
-- update param_questions.yml helps
-- use `_message_after_copy` to print out additional info after template is generated
+Several of the above hyper-parameters can accept the path to a script as one of their values. In those cases, we will copy the full contents of those files into `synthesize.py` (instead of copying the script itself). The following requirements must be met:
+
+- Any requirements beyond torch and plenoptic should be imported (e.g., `torchvision`), but torch and plenoptic do not need to (as long as you use the standard plenoptic shorthand, `po`).
+- The script should contain a selection of functions. The public functions are the possible choices; private functions will be copied over but cannot be selected directly. They are intended to e.g.,, allow for shared code across the public functions.
+- Each public function should return only the object of the specified type.
+- Whether the public function can accept any arguments depends on the hyper-parameter. The hyper-parameters are initialized in `synthesize.py` in the following sequence, and so each hyper-parameter can refer to those that occur before it. All arguments are optional, and the tested uses are either zero arguments or `image`: `image`, `model`, `loss_function`, `penalty_function`, `penalty_lambda`, `initial_image`, `optimized_metric`, `reference_metric`.

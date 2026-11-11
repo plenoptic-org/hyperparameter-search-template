@@ -1,7 +1,7 @@
 {%- macro help_text(variable, type) -%}
-    {%- if type == 'path' -%}
-        Enter {{ variable }}. This should be either a semicolon-separated list of single-line calls from plenoptic or torch namespaces (e.g., po.data.einstein();torch.rand((256,256))), or the path to a script, in which case we will use its functions (see template README for details).
-    {%- elif type == 'floats' -%}
-        Enter {{ variable }} as either a non-negative float or a list of non-negative floats.
+    {%- if type == 'special' -%}
+        Enter {{ variable }} as a list of ;-separated strings. See README for details.
+    {%- else -%}
+        Enter {{ variable }} as a {{ type }} or a list of them.
     {%- endif -%}
 {%- endmacro -%}
