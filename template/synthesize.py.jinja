@@ -124,13 +124,14 @@ def main(
     {%- for key in synth_params %}
         {{ key }}={{ key }},
     {%- endfor %}
-        {% if animate %}store_progress=max_iter//n_frames,{% endif %}
+        {% if animate %}store_progress=max(max_iter//n_frames, 1),{% endif %}
     )
     stop = time.time()
     synth.save(out_path)
     {% if animate %}
     ani_path = out_path.with_suffix(".mp4")
-    po.plot.synthesis_animate(synth).save(ani_path)
+    animate_kwargs = {{ animate_kwargs }}
+    po.plot.synthesis_animate(synth, **animate_kwargs).save(ani_path)
     {% endif %}
     img_path = out_path.with_suffix(".png")
     po.plot.synthesis_imshow(synth).figure.savefig(img_path)

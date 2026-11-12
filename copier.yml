@@ -164,6 +164,12 @@ animate:
   default: False
   when: "{{ synthesis_object != 'Eigendistortion' }}"
 
+animate_kwargs:
+  type: yaml
+  default: {}
+  when: "{{ animate }}"
+  help: Any kwargs to pass to animate?
+
 status_plot:
   type: path
   help: Would you like to save a custom status plot? Leave blank to use plenoptic's built-in po.plot.synthesis_status
