@@ -72,6 +72,7 @@ def main(
     if to_script:
         commands.extend(["#!/usr/bin/env bash", "set -euxo pipefail"])
     cluster_prefix = "{{ cluster_prefix }}"
+    base_out.mkdir(exist_ok=True)
 
     # Edit the following lines in order to modify what values you will search over. As
     # long as you're using the same type of synthesis object (e.g., Metamer), you
