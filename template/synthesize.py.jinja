@@ -134,7 +134,8 @@ def main(
     po.plot.synthesis_animate(synth, **animate_kwargs).save(ani_path)
     {% endif %}
     img_path = out_path.with_suffix(".png")
-    po.plot.synthesis_imshow(synth).figure.savefig(img_path)
+    imshow_kwargs = {{ imshow_kwargs }}
+    po.plot.synthesis_imshow(synth, **imshow_kwargs).figure.savefig(img_path)
     {% if status_plot %}
     {% for func in status_plot["calls"] %}
     plot_path = out_path.with_name(f"{out_path.stem}-{{func}}.svg")

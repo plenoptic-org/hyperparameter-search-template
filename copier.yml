@@ -158,6 +158,11 @@ search_params:
 !include param_questions.yml
 ---
 
+imshow_kwargs:
+  type: yaml
+  help: Any kwargs to pass to po.plot.synthesis_imshow?
+  default: {}
+
 animate:
   type: bool
   help: Would you like to save a video animating synthesis progress?
@@ -168,7 +173,7 @@ animate_kwargs:
   type: yaml
   default: {}
   when: "{{ animate }}"
-  help: Any kwargs to pass to animate?
+  help: Any kwargs to pass to po.plot.synthesis_animate?
 
 status_plot:
   type: path
