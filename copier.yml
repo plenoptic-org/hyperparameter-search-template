@@ -159,9 +159,9 @@ search_params:
 ---
 
 imshow_kwargs:
-  type: yaml
+  type: str
   help: Any kwargs to pass to po.plot.synthesis_imshow?
-  default: {}
+  default: "{}"
 
 animate:
   type: bool
@@ -170,8 +170,8 @@ animate:
   when: "{{ synthesis_object != 'Eigendistortion' }}"
 
 animate_kwargs:
-  type: yaml
-  default: {}
+  type: str
+  default: "{}"
   when: "{{ animate }}"
   help: Any kwargs to pass to po.plot.synthesis_animate?
 

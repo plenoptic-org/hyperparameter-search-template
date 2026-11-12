@@ -148,6 +148,10 @@ class ContextUpdater(ContextHook):
                                           "calls": [f"{f}" for f in funcs]}
             else:
                 raise ValueError(f"status_plot must be empty or path to a script! but got {context['status_plot']}")
+        for param in ["imshow_kwargs", "animate_kwargs"]:
+            if param in context:
+                if context[param][0] != "{" or context[param][-1] != "}":
+                    raise ValueError(f"{param} must be a dictionary!")
         context.update({
             "render_complex_params": complex_params,
             "render_load_params": load_in_paths,
