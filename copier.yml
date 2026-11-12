@@ -47,6 +47,7 @@ synthesis_object:
     - MetamerCTF
     - MADCompetition
     - Eigendistortion
+    - GenericSynthesis
 
 optimized_synthesis:
   when: false
@@ -87,6 +88,10 @@ init_params:
     {%- elif synthesis_object == 'Eigendistortion' -%}
     - image
     - model
+    {%- elif synthesis_object == 'GenericSynthesis' -%}
+    - loss_function
+    - penalty_function
+    - penalty_lambda
     {%- endif -%}
 
 setup_params:
@@ -94,7 +99,7 @@ setup_params:
   type: yaml
   multiline: true
   default: |
-    {%- if synthesis_object in ['Metamer', 'MetamerCTF'] -%}
+    {%- if synthesis_object in ['Metamer', 'MetamerCTF', 'GenericSynthesis'] -%}
     - initial_image
     - optimizer
     - optimizer_kwargs
@@ -115,7 +120,7 @@ synth_params:
   type: yaml
   multiline: true
   default: |
-    {%- if synthesis_object in ['Metamer', 'MADCompetition'] -%}
+    {%- if synthesis_object in ['Metamer', 'MADCompetition', 'GenericSynthesis'] -%}
     - max_iter
     - stop_criterion
     - stop_iters_to_check
