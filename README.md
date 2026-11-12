@@ -148,3 +148,9 @@ Several of the above hyper-parameters can accept the path to a script as one of 
 - The script should contain a selection of functions. The public functions are the possible choices; private functions will be copied over but cannot be selected directly. They are intended to e.g.,, allow for shared code across the public functions.
 - Each public function should return only the object of the specified type.
 - Whether the public function can accept any arguments depends on the hyper-parameter. The hyper-parameters are initialized in `synthesize.py` in the following sequence, and so each hyper-parameter can refer to those that occur before it. All arguments are optional, and the tested uses are either zero arguments or `image`: `image`, `model`, `loss_function`, `penalty_function`, `penalty_lambda`, `initial_image`, `optimized_metric`, `reference_metric`.
+
+## plenoptic version
+
+If you need to specify a specific plenoptic version or branch, pass `--ask plenoptic_version` when running `copier copy` or `copier update`. The template will then ask you about the version to use. You can specify either a version (e.g., `2.0.0`), in which case we'll install the specified version from pypi, or a branch, in which case we'll install the specific branch from the plenoptic Github.
+
+Note that we assume this specifies a branch if it doesn't look like a version string, and we do not validate that the branch exists.

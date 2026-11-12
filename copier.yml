@@ -203,3 +203,9 @@ extra_deps:
   type: json
   help: Any extra dependencies?
   default: []
+
+plenoptic_version:
+  type: str
+  ask: false
+  help: What plenoptic version to use? This can be a version tag or a branch. By default, no restriction.
+  default: ""

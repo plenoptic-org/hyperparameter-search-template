@@ -4,6 +4,7 @@ import ast
 import json
 import pathlib
 import shutil
+from packaging.version import Version, InvalidVersion
 
 
 complex_choices = ["image", "model", "loss_function", "penalty_function",
@@ -152,6 +153,13 @@ class ContextUpdater(ContextHook):
             if param in context:
                 if context[param][0] != "{" or context[param][-1] != "}":
                     raise ValueError(f"{param} must be a dictionary!")
+        if (val := context.pop("plenoptic_version", "")):
+            try:
+                val = Version(val)
+                val = f" == {val}"
+            except InvalidVersion:
+                val = f" @ git+https://github.com/plenoptic-org/plenoptic.git@{val}"
+            context["plenoptic_version"] = val
         context.update({
             "render_complex_params": complex_params,
             "render_load_params": load_in_paths,
