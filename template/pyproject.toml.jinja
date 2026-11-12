@@ -10,6 +10,9 @@ dependencies = [
     "pandas",
     "torch",
     "imageio",
+{% for dep in extra_deps -%}
+    "{{ dep }}",
+{% endfor -%}
 ]
 {% if cpu_only %}
 [tool.uv.sources]

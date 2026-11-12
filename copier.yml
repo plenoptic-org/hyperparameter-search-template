@@ -187,3 +187,8 @@ cpu_only:
   type: bool
   default: False
   help: Will you only run this on the CPU? If yes, we'll tell uv to install torch from the cpu-only index.
+
+extra_deps:
+  type: json
+  help: Any extra dependencies?
+  default: []
