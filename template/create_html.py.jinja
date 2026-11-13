@@ -94,8 +94,8 @@ def main(
     choices.
     {%- endif %}
 
-    tooltip can be multiple of these (e.g., "--tooltip image_name model"). If tooltip is
-    None (the default), will contain all of the above.
+    tooltip can be multiple of these (e.g., "--tooltip synthesis_duration dtype"). If
+    tooltip is None (the default), will contain all of the above.
 
     separate_plots specifies which of the above to create separate plots for. it can
     similarly be multiple of these, but if None (the default), will plot all data on
@@ -144,7 +144,7 @@ def main(
         df = pd.concat([pd.read_csv(f) for f in input_path.glob("*csv")
                         if f != output_path.with_suffix(".csv")])
 
-    {% if synthesis_object != 'GenericSynthesis' -%}
+    {% if "image" in render_complex_params -%}
     df["image_name"] = df["image"]
     {%- endif %}
 
