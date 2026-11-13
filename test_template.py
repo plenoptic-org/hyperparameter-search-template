@@ -91,6 +91,9 @@ def construct_data(synth_params, synth_name, search_params, all_params=None):
     default_choice["max_iter"] = 2
     default_choice["status_plot"] = ""
     default_choice["cpu_only"] = True
+    default_choice["extra_deps"] = []
+    default_choice["imshow_kwargs"] = "{}"
+    default_choice["animate_kwargs"] = "{}"
     to_search = OrderedDict(
         {
             k: [
