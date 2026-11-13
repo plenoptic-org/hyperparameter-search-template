@@ -143,9 +143,12 @@ def main(
     else:
         df = pd.concat([pd.read_csv(f) for f in input_path.glob("*csv")
                         if f != output_path.with_suffix(".csv")])
-    df["image_name"] = df["image"]
-    df.to_csv(output_path.with_suffix(".csv"), index=False)
 
+    {% if synthesis_object != 'GenericSynthesis' -%}
+    df["image_name"] = df["image"]
+    {%- endif %}
+
+    df.to_csv(output_path.with_suffix(".csv"), index=False)
 
     # encode png image as a base64 string so we can display it,
     # see https://altair-viz.github.io/user_guide/marks/image.html
