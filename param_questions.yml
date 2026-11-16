@@ -35,7 +35,7 @@ penalty_lambda:
 initial_image:
   type: path
   help: "{%- from 'macros.jinja' import help_text -%}{{ help_text('initial_image', 'special') }}"
-  when: "{{ 'initial_image' in search_params }}"
+  when: "{{ 'initial_image' in search_params or synthesis_object == 'GenericSynthesis' }}"
   default: "torch.rand_like(image)"
 
 optimizer:
