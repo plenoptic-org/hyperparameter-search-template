@@ -51,6 +51,7 @@ def main(
     tooltip: Annotated[list[str] | None, Parameter(consume_multiple=True)] = None,
     logscale_x: bool = False,
     logscale_y: bool = False,
+    logscale_color: bool = False,
     share_x: bool = True,
     share_y: bool = True,
     separate_plots: Annotated[list[str] | None, Parameter(consume_multiple=True)] = None,
@@ -172,7 +173,12 @@ def main(
         y = y.scale(type="log")
     encodings = {"x": x, "y": y, "tooltip": tooltip}
     if color is not None:
-        encodings["color"] = alt.Color(color)
+        color = alt.Color(color)
+        if logscale_color:
+            color = color.scale(type="log")
+        encodings["color"] = color
+    elif logscale_color:
+        raise ValueError(f"Can't set {logscale_color=} when color is None!")
     if shape is not None:
         encodings["shape"] = alt.Shape(shape, type="nominal")
     facets = {}
