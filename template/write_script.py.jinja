@@ -103,6 +103,9 @@ def main(
     params["{{ key.split('_')[0] }}"] = tmp
     {%- endfor %}
     keys = list(params.keys())
+    {%- for key, (_, value, _) in render_dict_params.items() %}
+    keys.append("{{ key }}")
+    {%- endfor %}
 
     if max_iter is not None:
         params["max_iter"] = [max_iter]
@@ -111,7 +114,6 @@ def main(
     {%- for key, (_, value, _) in render_dict_params.items() %}
     if any([len(v) > 1 for v in {{ key }}.values()]):
         path_keys.append("{{ key }}")
-        keys.append("{{ key }}")
     {%- endfor %}
     if len(path_keys) == 0:
         raise ValueError("Not searching over anything!")
