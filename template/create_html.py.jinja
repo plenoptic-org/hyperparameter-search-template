@@ -121,25 +121,6 @@ def main(
         in a csv file with the same name.
 
     """
-    all_params = [
-    {%- for key in render_complex_params %}
-        {% if key == 'image' %}"image_name",{% else %}"{{ key }}",{% endif %}
-    {%- endfor %}
-    {%- for key in render_simple_params %}
-        "{{ key }}",
-    {%- endfor %}
-    {%- if optimized_synthesis %}
-        "synthesis_loss",
-        "synthesis_penalty",
-    {%- endif %}
-        "synthesis_duration",
-        "device",
-        "dtype",
-    ]
-    if tooltip is None:
-        tooltip = all_params
-
-
     if input_path.suffix == ".csv":
         df = pd.read_csv(input_path)
     else:
@@ -150,6 +131,9 @@ def main(
     {% if "image" in render_complex_params -%}
     df["image_name"] = df["image"]
     {%- endif %}
+
+    if tooltip is None:
+        tooltip = df.columns.tolist()
 
     df.to_csv(output_path.with_suffix(".csv"), index=False)
 
