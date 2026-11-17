@@ -12,7 +12,7 @@ from typing import Annotated
 app = App()
 
 
-def create_plot(df, encodings, facets, share_x, share_y, img_size, output_path, title=None):
+def create_plot(df, encodings, facets, share_x, share_y, img_size, interactive, output_path, title=None):
     select = alt.selection_point(name="select", on="click", empty=False)
     chart = alt.Chart(df).mark_point().encode(
         **encodings,
@@ -35,9 +35,12 @@ def create_plot(df, encodings, facets, share_x, share_y, img_size, output_path, 
     ).transform_filter(
         select
     )
-    (chart | img_faceted).configure(
+    chart = (chart | img_faceted).configure(
         autosize=alt.AutoSizeParams(resize=True)
-    ).save(output_path)
+    )
+    if interactive:
+        chart = chart.interactive()
+    chart.save(output_path)
 
 
 @app.default
@@ -54,6 +57,7 @@ def main(
     logscale_color: bool = False,
     share_x: bool = True,
     share_y: bool = True,
+    interactive: bool = False,
     separate_plots: Annotated[list[str] | None, Parameter(consume_multiple=True)] = None,
     img_size: int = 250,
     input_path: Path = Path("{{ base_out }}"),
@@ -108,6 +112,9 @@ def main(
         When facetting, whether all x-axes should be shared or not.
     share_y :
         When facetting, whether all y-axes should be shared or not.
+    interactive :
+        Whether to make the plot interactive or not. This allows you to pan and zoom,
+        but seems to make the default x and y limits a little odd.
     img_size :
         Size to display the image at.
     input_path :
@@ -174,14 +181,14 @@ def main(
         facets["row"] = alt.Row(row)
 
     if separate_plots is None:
-        create_plot(df, encodings, facets, share_x, share_y, img_size, output_path)
+        create_plot(df, encodings, facets, share_x, share_y, img_size, interactive, output_path)
     else:
         for n, g in df.groupby(separate_plots):
             title = [f"{k}-{v}" for k, v in zip(separate_plots, n)]
             title = " ".join(title)
             n = "_".join([str(n_) for n_ in n])
             out = output_path.with_name(f"{output_path.stem}-{n}.html")
-            create_plot(g, encodings, facets, share_x, share_y, img_size, out, title)
+            create_plot(g, encodings, facets, share_x, share_y, img_size, interactive, out, title)
 
 
 
