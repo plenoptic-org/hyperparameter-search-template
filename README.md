@@ -43,6 +43,12 @@ The intended loop is as follows:
   - If you are changing hyperparameters which use python objects (e.g., `image`, `model`, `optimizer`), then you should run `copier update` (`uvx --with copier_template_extensions copier update TARGET_DIRECTORY --trust`) in order to update the template.
     - The exception here is if you would like to point `image` / `initial_image` to a file on disk, either an image file or the output of an earlier synthesis run. In that case, you can add the path to that file directly to `write_script.py`
 
+## A note on repeat and skipping existing files
+
+When you enter the repeat step above and re-run `write_script.py`, you may see `UserWarning: outfile=... exists, skipping`. As this message says, when a `.pt` file with the same path exists, `write_script.py` will skip it. However, we do not check that the arguments that would be passed to `synthesize.py` to create that file are the same as the existing one; we just skip to be safe.
+
+You may hit this situation when you update what you are searching over (either by editing `write_script.py` or running `copier update`). Our recommendation is to use sub-directories: put everything related to one exploration in a directory and put the outputs of each script created by `write_script.py` in sub-directories. `create_html.py` will search for `csv` files in the directory pointed to by `input_path` and its sub-directories (only one level down).
+
 ## Virtual environments
 
 Each rendered template will include a `pyproject.toml` file with dependencies, so you can a separate virtual environment for each project.
@@ -154,3 +160,4 @@ Several of the above hyper-parameters can accept the path to a script as one of 
 If you need to specify a specific plenoptic version or branch, pass `--ask plenoptic_version` when running `copier copy` or `copier update`. The template will then ask you about the version to use. You can specify either a version (e.g., `2.0.0`), in which case we'll install the specified version from pypi, or a branch, in which case we'll install the specific branch from the plenoptic Github.
 
 Note that we assume this specifies a branch if it doesn't look like a version string, and we do not validate that the branch exists.
+

@@ -113,7 +113,8 @@ def main(
     input_path :
         Either:
         - Directory containing all csvs files summarizing synthesis results. We'll load
-          in all csv files contained in *this* directory (not recursively).
+          in all csv files contained in *this* directory and its sub-directories
+          (only one level, no further).
         - Path to a csv file created by a prior run of this function.
     output_path :
         Path to save the html at. We'll save a csv containing the concatenated results
@@ -142,7 +143,8 @@ def main(
     if input_path.suffix == ".csv":
         df = pd.read_csv(input_path)
     else:
-        df = pd.concat([pd.read_csv(f) for f in input_path.glob("*csv")
+        paths = list(input_path.glob("*csv")) + list(input_path.glob("*/*csv"))
+        df = pd.concat([pd.read_csv(f) for f in paths
                         if f != output_path.with_suffix(".csv")])
 
     {% if "image" in render_complex_params -%}
