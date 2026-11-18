@@ -109,6 +109,11 @@ class ContextUpdater(ContextHook):
                     val = ast.literal_eval(val)
                     if non_kwargs_param and len(non_kwargs_param["choices"]) > 1:
                         new_val = {}
+                        if isinstance(val, list):
+                            # then we're running the template a second time and the
+                            # first time there was only a single optimizer with a list.
+                            # in either case, this will get better in a sec
+                            val = {"tmp": val}
                         for k, v in val.items():
                             if not isinstance(v, list):
                                 v = [v]
