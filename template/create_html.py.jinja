@@ -139,14 +139,16 @@ def main(
                                  if f != output_path.with_suffix(".csv")]))
     df = pd.concat(df)
 
+    df.to_csv(output_path.with_suffix(".csv"), index=False)
+
     {% if "image" in render_complex_params -%}
+    # image is considered special by altair, so we remove it to prevent issues
     df["image_name"] = df["image"]
+    df = df.drop(columns="image")
     {%- endif %}
 
     if tooltip is None:
         tooltip = df.columns.tolist()
-
-    df.to_csv(output_path.with_suffix(".csv"), index=False)
 
     # encode png image as a base64 string so we can display it,
     # see https://altair-viz.github.io/user_guide/marks/image.html
