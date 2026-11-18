@@ -148,7 +148,7 @@ def main(
     {%- endif %}
 
     if tooltip is None:
-        tooltip = df.columns.tolist()
+        tooltip = [col for col in df.columns if "path" not in col]
 
     # encode png image as a base64 string so we can display it,
     # see https://altair-viz.github.io/user_guide/marks/image.html
