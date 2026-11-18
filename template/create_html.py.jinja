@@ -132,7 +132,7 @@ def main(
     df = []
     for inp in input_paths:
         if inp.suffix == ".csv":
-            df.append(pd.read_csv(input_paths))
+            df.append(pd.read_csv(inp))
         else:
             paths = list(inp.glob("*csv")) + list(inp.glob("*/*csv"))
             df.append(pd.concat([pd.read_csv(f) for f in paths
