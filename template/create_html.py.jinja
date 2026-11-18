@@ -60,7 +60,7 @@ def main(
     interactive: bool = False,
     separate_plots: Annotated[list[str] | None, Parameter(consume_multiple=True)] = None,
     img_size: int = 250,
-    input_path: Annotated[list[Path], Parameter(consume_multiple=True)] = [Path("{{ base_out }}")],
+    input_paths: Annotated[list[Path], Parameter(consume_multiple=True)] = [Path("{{ base_out }}")],
     output_path: Path = Path("{{ synthesis_object | lower }}_results.html")
 ):
     """Create interactive altair plot.
@@ -117,7 +117,7 @@ def main(
         but seems to make the default x and y limits a little odd.
     img_size :
         Size to display the image at.
-    input_path :
+    input_paths :
         One of:
         - Directory containing all csvs files summarizing synthesis results. We'll load
           in all csv files contained in *this* directory and its sub-directories
@@ -130,9 +130,9 @@ def main(
 
     """
     df = []
-    for inp in input_path:
+    for inp in input_paths:
         if inp.suffix == ".csv":
-            df.append(pd.read_csv(input_path))
+            df.append(pd.read_csv(input_paths))
         else:
             paths = list(inp.glob("*csv")) + list(inp.glob("*/*csv"))
             df.append(pd.concat([pd.read_csv(f) for f in paths
